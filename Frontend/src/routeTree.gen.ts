@@ -8,323 +8,323 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root.tsx";
-import { Route as RegisterRouteImport } from "./routes/register.tsx";
-import { Route as LoginRouteImport } from "./routes/login.tsx";
-import { Route as DashboardRouteImport } from "./routes/dashboard.tsx";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as DashboardIndexRouteImport } from "./routes/dashboard.index.tsx";
-import { Route as DashboardZonesRouteImport } from "./routes/dashboard.zones.tsx";
-import { Route as DashboardSettingsRouteImport } from "./routes/dashboard.settings.tsx";
-import { Route as DashboardPoultryRouteImport } from "./routes/dashboard.poultry.tsx";
-import { Route as DashboardCropsRouteImport } from "./routes/dashboard.crops.tsx";
-import { Route as DashboardControlRouteImport } from "./routes/dashboard.control.tsx";
-import { Route as DashboardAquacultureRouteImport } from "./routes/dashboard.aquaculture.tsx";
-import { Route as DashboardAnalyticsRouteImport } from "./routes/dashboard.analytics.tsx";
-import { Route as DashboardAlertsRouteImport } from "./routes/dashboard.alerts.tsx";
-import { Route as DashboardZonesZoneIdRouteImport } from "./routes/dashboard.zones.$zoneId.tsx";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardZonesRouteImport } from './routes/dashboard.zones'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardPoultryRouteImport } from './routes/dashboard.poultry'
+import { Route as DashboardCropsRouteImport } from './routes/dashboard.crops'
+import { Route as DashboardControlRouteImport } from './routes/dashboard.control'
+import { Route as DashboardAquacultureRouteImport } from './routes/dashboard.aquaculture'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as DashboardAlertsRouteImport } from './routes/dashboard.alerts'
+import { Route as DashboardZonesZoneIdRouteImport } from './routes/dashboard.zones.$zoneId'
 
 const RegisterRoute = RegisterRouteImport.update({
-  id: "/register",
-  path: "/register",
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LoginRoute = LoginRouteImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardZonesRoute = DashboardZonesRouteImport.update({
-  id: "/zones",
-  path: "/zones",
+  id: '/zones',
+  path: '/zones',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: "/settings",
-  path: "/settings",
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardPoultryRoute = DashboardPoultryRouteImport.update({
-  id: "/poultry",
-  path: "/poultry",
+  id: '/poultry',
+  path: '/poultry',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardCropsRoute = DashboardCropsRouteImport.update({
-  id: "/crops",
-  path: "/crops",
+  id: '/crops',
+  path: '/crops',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardControlRoute = DashboardControlRouteImport.update({
-  id: "/control",
-  path: "/control",
+  id: '/control',
+  path: '/control',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardAquacultureRoute = DashboardAquacultureRouteImport.update({
-  id: "/aquaculture",
-  path: "/aquaculture",
+  id: '/aquaculture',
+  path: '/aquaculture',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: "/analytics",
-  path: "/analytics",
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardAlertsRoute = DashboardAlertsRouteImport.update({
-  id: "/alerts",
-  path: "/alerts",
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => DashboardRoute,
-} as any);
+} as any)
 const DashboardZonesZoneIdRoute = DashboardZonesZoneIdRouteImport.update({
-  id: "/$zoneId",
-  path: "/$zoneId",
+  id: '/$zoneId',
+  path: '/$zoneId',
   getParentRoute: () => DashboardZonesRoute,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/dashboard": typeof DashboardRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
-  "/dashboard/alerts": typeof DashboardAlertsRoute;
-  "/dashboard/analytics": typeof DashboardAnalyticsRoute;
-  "/dashboard/aquaculture": typeof DashboardAquacultureRoute;
-  "/dashboard/control": typeof DashboardControlRoute;
-  "/dashboard/crops": typeof DashboardCropsRoute;
-  "/dashboard/poultry": typeof DashboardPoultryRoute;
-  "/dashboard/settings": typeof DashboardSettingsRoute;
-  "/dashboard/zones": typeof DashboardZonesRouteWithChildren;
-  "/dashboard/": typeof DashboardIndexRoute;
-  "/dashboard/zones/$zoneId": typeof DashboardZonesZoneIdRoute;
+  '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/dashboard/alerts': typeof DashboardAlertsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/aquaculture': typeof DashboardAquacultureRoute
+  '/dashboard/control': typeof DashboardControlRoute
+  '/dashboard/crops': typeof DashboardCropsRoute
+  '/dashboard/poultry': typeof DashboardPoultryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/zones': typeof DashboardZonesRouteWithChildren
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/zones/$zoneId': typeof DashboardZonesZoneIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
-  "/dashboard/alerts": typeof DashboardAlertsRoute;
-  "/dashboard/analytics": typeof DashboardAnalyticsRoute;
-  "/dashboard/aquaculture": typeof DashboardAquacultureRoute;
-  "/dashboard/control": typeof DashboardControlRoute;
-  "/dashboard/crops": typeof DashboardCropsRoute;
-  "/dashboard/poultry": typeof DashboardPoultryRoute;
-  "/dashboard/settings": typeof DashboardSettingsRoute;
-  "/dashboard/zones": typeof DashboardZonesRouteWithChildren;
-  "/dashboard": typeof DashboardIndexRoute;
-  "/dashboard/zones/$zoneId": typeof DashboardZonesZoneIdRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/dashboard/alerts': typeof DashboardAlertsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/aquaculture': typeof DashboardAquacultureRoute
+  '/dashboard/control': typeof DashboardControlRoute
+  '/dashboard/crops': typeof DashboardCropsRoute
+  '/dashboard/poultry': typeof DashboardPoultryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/zones': typeof DashboardZonesRouteWithChildren
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/zones/$zoneId': typeof DashboardZonesZoneIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/dashboard": typeof DashboardRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
-  "/dashboard/alerts": typeof DashboardAlertsRoute;
-  "/dashboard/analytics": typeof DashboardAnalyticsRoute;
-  "/dashboard/aquaculture": typeof DashboardAquacultureRoute;
-  "/dashboard/control": typeof DashboardControlRoute;
-  "/dashboard/crops": typeof DashboardCropsRoute;
-  "/dashboard/poultry": typeof DashboardPoultryRoute;
-  "/dashboard/settings": typeof DashboardSettingsRoute;
-  "/dashboard/zones": typeof DashboardZonesRouteWithChildren;
-  "/dashboard/": typeof DashboardIndexRoute;
-  "/dashboard/zones/$zoneId": typeof DashboardZonesZoneIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/dashboard/alerts': typeof DashboardAlertsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/aquaculture': typeof DashboardAquacultureRoute
+  '/dashboard/control': typeof DashboardControlRoute
+  '/dashboard/crops': typeof DashboardCropsRoute
+  '/dashboard/poultry': typeof DashboardPoultryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/zones': typeof DashboardZonesRouteWithChildren
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/zones/$zoneId': typeof DashboardZonesZoneIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/dashboard"
-    | "/login"
-    | "/register"
-    | "/dashboard/alerts"
-    | "/dashboard/analytics"
-    | "/dashboard/aquaculture"
-    | "/dashboard/control"
-    | "/dashboard/crops"
-    | "/dashboard/poultry"
-    | "/dashboard/settings"
-    | "/dashboard/zones"
-    | "/dashboard/"
-    | "/dashboard/zones/$zoneId";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/dashboard/alerts'
+    | '/dashboard/analytics'
+    | '/dashboard/aquaculture'
+    | '/dashboard/control'
+    | '/dashboard/crops'
+    | '/dashboard/poultry'
+    | '/dashboard/settings'
+    | '/dashboard/zones'
+    | '/dashboard/'
+    | '/dashboard/zones/$zoneId'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/login"
-    | "/register"
-    | "/dashboard/alerts"
-    | "/dashboard/analytics"
-    | "/dashboard/aquaculture"
-    | "/dashboard/control"
-    | "/dashboard/crops"
-    | "/dashboard/poultry"
-    | "/dashboard/settings"
-    | "/dashboard/zones"
-    | "/dashboard"
-    | "/dashboard/zones/$zoneId";
+    | '/'
+    | '/login'
+    | '/register'
+    | '/dashboard/alerts'
+    | '/dashboard/analytics'
+    | '/dashboard/aquaculture'
+    | '/dashboard/control'
+    | '/dashboard/crops'
+    | '/dashboard/poultry'
+    | '/dashboard/settings'
+    | '/dashboard/zones'
+    | '/dashboard'
+    | '/dashboard/zones/$zoneId'
   id:
-    | "__root__"
-    | "/"
-    | "/dashboard"
-    | "/login"
-    | "/register"
-    | "/dashboard/alerts"
-    | "/dashboard/analytics"
-    | "/dashboard/aquaculture"
-    | "/dashboard/control"
-    | "/dashboard/crops"
-    | "/dashboard/poultry"
-    | "/dashboard/settings"
-    | "/dashboard/zones"
-    | "/dashboard/"
-    | "/dashboard/zones/$zoneId";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/dashboard/alerts'
+    | '/dashboard/analytics'
+    | '/dashboard/aquaculture'
+    | '/dashboard/control'
+    | '/dashboard/crops'
+    | '/dashboard/poultry'
+    | '/dashboard/settings'
+    | '/dashboard/zones'
+    | '/dashboard/'
+    | '/dashboard/zones/$zoneId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  DashboardRoute: typeof DashboardRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
-  RegisterRoute: typeof RegisterRoute;
+  IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/register": {
-      id: "/register";
-      path: "/register";
-      fullPath: "/register";
-      preLoaderRoute: typeof RegisterRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/dashboard": {
-      id: "/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof DashboardRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/dashboard/": {
-      id: "/dashboard/";
-      path: "/";
-      fullPath: "/dashboard/";
-      preLoaderRoute: typeof DashboardIndexRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/zones": {
-      id: "/dashboard/zones";
-      path: "/zones";
-      fullPath: "/dashboard/zones";
-      preLoaderRoute: typeof DashboardZonesRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/settings": {
-      id: "/dashboard/settings";
-      path: "/settings";
-      fullPath: "/dashboard/settings";
-      preLoaderRoute: typeof DashboardSettingsRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/poultry": {
-      id: "/dashboard/poultry";
-      path: "/poultry";
-      fullPath: "/dashboard/poultry";
-      preLoaderRoute: typeof DashboardPoultryRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/crops": {
-      id: "/dashboard/crops";
-      path: "/crops";
-      fullPath: "/dashboard/crops";
-      preLoaderRoute: typeof DashboardCropsRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/control": {
-      id: "/dashboard/control";
-      path: "/control";
-      fullPath: "/dashboard/control";
-      preLoaderRoute: typeof DashboardControlRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/aquaculture": {
-      id: "/dashboard/aquaculture";
-      path: "/aquaculture";
-      fullPath: "/dashboard/aquaculture";
-      preLoaderRoute: typeof DashboardAquacultureRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/analytics": {
-      id: "/dashboard/analytics";
-      path: "/analytics";
-      fullPath: "/dashboard/analytics";
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/alerts": {
-      id: "/dashboard/alerts";
-      path: "/alerts";
-      fullPath: "/dashboard/alerts";
-      preLoaderRoute: typeof DashboardAlertsRouteImport;
-      parentRoute: typeof DashboardRoute;
-    };
-    "/dashboard/zones/$zoneId": {
-      id: "/dashboard/zones/$zoneId";
-      path: "/$zoneId";
-      fullPath: "/dashboard/zones/$zoneId";
-      preLoaderRoute: typeof DashboardZonesZoneIdRouteImport;
-      parentRoute: typeof DashboardZonesRoute;
-    };
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/zones': {
+      id: '/dashboard/zones'
+      path: '/zones'
+      fullPath: '/dashboard/zones'
+      preLoaderRoute: typeof DashboardZonesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/poultry': {
+      id: '/dashboard/poultry'
+      path: '/poultry'
+      fullPath: '/dashboard/poultry'
+      preLoaderRoute: typeof DashboardPoultryRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/crops': {
+      id: '/dashboard/crops'
+      path: '/crops'
+      fullPath: '/dashboard/crops'
+      preLoaderRoute: typeof DashboardCropsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/control': {
+      id: '/dashboard/control'
+      path: '/control'
+      fullPath: '/dashboard/control'
+      preLoaderRoute: typeof DashboardControlRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/aquaculture': {
+      id: '/dashboard/aquaculture'
+      path: '/aquaculture'
+      fullPath: '/dashboard/aquaculture'
+      preLoaderRoute: typeof DashboardAquacultureRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/alerts': {
+      id: '/dashboard/alerts'
+      path: '/alerts'
+      fullPath: '/dashboard/alerts'
+      preLoaderRoute: typeof DashboardAlertsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/zones/$zoneId': {
+      id: '/dashboard/zones/$zoneId'
+      path: '/$zoneId'
+      fullPath: '/dashboard/zones/$zoneId'
+      preLoaderRoute: typeof DashboardZonesZoneIdRouteImport
+      parentRoute: typeof DashboardZonesRoute
+    }
   }
 }
 
 interface DashboardZonesRouteChildren {
-  DashboardZonesZoneIdRoute: typeof DashboardZonesZoneIdRoute;
+  DashboardZonesZoneIdRoute: typeof DashboardZonesZoneIdRoute
 }
 
 const DashboardZonesRouteChildren: DashboardZonesRouteChildren = {
   DashboardZonesZoneIdRoute: DashboardZonesZoneIdRoute,
-};
+}
 
 const DashboardZonesRouteWithChildren = DashboardZonesRoute._addFileChildren(
   DashboardZonesRouteChildren,
-);
+)
 
 interface DashboardRouteChildren {
-  DashboardAlertsRoute: typeof DashboardAlertsRoute;
-  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute;
-  DashboardAquacultureRoute: typeof DashboardAquacultureRoute;
-  DashboardControlRoute: typeof DashboardControlRoute;
-  DashboardCropsRoute: typeof DashboardCropsRoute;
-  DashboardPoultryRoute: typeof DashboardPoultryRoute;
-  DashboardSettingsRoute: typeof DashboardSettingsRoute;
-  DashboardZonesRoute: typeof DashboardZonesRouteWithChildren;
-  DashboardIndexRoute: typeof DashboardIndexRoute;
+  DashboardAlertsRoute: typeof DashboardAlertsRoute
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
+  DashboardAquacultureRoute: typeof DashboardAquacultureRoute
+  DashboardControlRoute: typeof DashboardControlRoute
+  DashboardCropsRoute: typeof DashboardCropsRoute
+  DashboardPoultryRoute: typeof DashboardPoultryRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardZonesRoute: typeof DashboardZonesRouteWithChildren
+  DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -337,25 +337,27 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardZonesRoute: DashboardZonesRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
-};
+}
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(DashboardRouteChildren);
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
