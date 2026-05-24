@@ -1,88 +1,175 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { 
+  Users, 
+  UserPlus, 
+  Trash2, 
+  Shield, 
+  MapPin, 
+  Mail, 
+  CheckCircle2, 
+  XCircle,
+  ChevronRight,
+  LayoutGrid
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/settings")({
-  head: () => ({ meta: [{ title: "Settings — SFMS" }] }),
-  component: SettingsPage,
+  head: () => ({ meta: [{ title: "Team Management — SFMS" }] }),
+  component: TeamManagement,
 });
 
-function SettingsPage() {
-  const [notif, setNotif] = useState({ email: true, push: true, sms: false });
+type Section = "Crops" | "Poultry" | "Aquaculture";
+
+interface SubUser {
+  id: number;
+  name: string;
+  email: string;
+  sections: Section[];
+  status: "active" | "invited";
+}
+
+function TeamManagement() {
+  const [users, setUsers] = useState<SubUser[]>([
+    { id: 1, name: "Jean Dupont", email: "jean@farm.com", sections: ["Crops"], status: "active" },
+    { id: 2, name: "Marie Curie", email: "marie@farm.com", sections: ["Poultry", "Aquaculture"], status: "active" },
+    { id: 3, name: "Pierre Gasly", email: "pierre@farm.com", sections: [], status: "invited" },
+  ]);
+
+  const [isAdding, setIsAdding] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your profile, farm and notifications.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Team Management</h1>
+          <p className="text-sm text-muted-foreground">Manage your farm staff and allocate their responsibilities.</p>
+        </div>
+        <button 
+          onClick={() => setIsAdding(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+        >
+          <UserPlus className="h-4 w-4" /> Add Sub-user
+        </button>
       </div>
 
-      <Section title="User profile" desc="Personal information">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full name" defaultValue="Alex Farmer" />
-          <Field label="Email" defaultValue="alex@farm.com" type="email" />
-          <Field label="Phone" defaultValue="+1 555 234 9988" />
-          <Field label="Role" defaultValue="Owner" />
-        </div>
-      </Section>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="p-6 border-b border-border">
+              <h2 className="font-bold">Staff Members</h2>
+            </div>
+            <div className="divide-y divide-border">
+              {users.map((user) => (
+                <div key={user.id} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-semibold flex items-center gap-2">
+                        {user.name}
+                        {user.status === "invited" && (
+                          <span className="text-[10px] bg-warning/20 text-warning-foreground px-1.5 py-0.5 rounded uppercase">Pending</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> {user.email}
+                      </div>
+                    </div>
+                  </div>
 
-      <Section title="Farm configuration" desc="Default values for your fields">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Farm name" defaultValue="Greenfield Estate" />
-          <Field label="Location" defaultValue="Tuscany, Italy" />
-          <Field label="Total area (ha)" defaultValue="11.5" />
-          <Field label="Time zone" defaultValue="Europe/Rome" />
+                  <div className="flex items-center gap-6">
+                    <div className="hidden sm:flex flex-wrap gap-1 max-w-[200px] justify-end">
+                      {user.sections.length > 0 ? (
+                        user.sections.map(s => (
+                          <span key={s} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full font-medium">
+                            {s}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground italic">No sections assigned</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors">
+                        <LayoutGrid className="h-4 w-4" />
+                      </button>
+                      <button className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </Section>
 
-      <Section title="Notification preferences" desc="Choose how to receive alerts">
-        <div className="space-y-3">
-          {[
-            { k: "email" as const, label: "Email notifications" },
-            { k: "push" as const, label: "Push notifications" },
-            { k: "sms" as const, label: "SMS for critical alerts" },
-          ].map((n) => (
-            <label key={n.k} className="flex cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
-              <span className="text-sm font-medium">{n.label}</span>
-              <input
-                type="checkbox"
-                checked={notif[n.k]}
-                onChange={(e) => setNotif({ ...notif, [n.k]: e.target.checked })}
-                className="h-5 w-5 rounded accent-primary"
-              />
-            </label>
-          ))}
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-border bg-gradient-card p-6 shadow-soft">
+            <h3 className="font-bold mb-4 flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" /> Allocation Logic
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sub-users will only be able to view and manage the sections you allocate to them. 
+              They cannot add new users or change farm-level settings.
+            </p>
+            <div className="mt-6 space-y-4">
+              {[
+                { label: "Crops", icon: MapPin, count: 4 },
+                { label: "Poultry", icon: MapPin, count: 2 },
+                { label: "Aquaculture", icon: MapPin, count: 1 },
+              ].map(item => (
+                <div key={item.label} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card/50">
+                  <div className="flex items-center gap-3">
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{item.count} Active Units</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </Section>
-
-      <div className="flex justify-end gap-3">
-        <button className="rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold hover:bg-muted">Cancel</button>
-        <button className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5">Save changes</button>
       </div>
-    </div>
-  );
-}
 
-function Section({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-      <div className="mb-5">
-        <h2 className="font-display text-lg font-bold">{title}</h2>
-        <p className="text-xs text-muted-foreground">{desc}</p>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Field({ label, defaultValue, type = "text" }: { label: string; defaultValue: string; type?: string }) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-sm font-medium">{label}</label>
-      <input
-        type={type}
-        defaultValue={defaultValue}
-        className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors focus:border-primary"
-      />
+      {isAdding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-6">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-glow">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Add New Sub-user</h2>
+              <button onClick={() => setIsAdding(false)} className="p-1 hover:bg-muted rounded-full">
+                <XCircle className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsAdding(false); }}>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Full Name</label>
+                <input required type="text" placeholder="e.g. Jean Dupont" className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Email Address</label>
+                <input required type="email" placeholder="staff@farm.com" className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Assign Sections</label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {["Crops", "Poultry", "Aquaculture"].map(s => (
+                    <label key={s} className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors">
+                      <input type="checkbox" className="accent-primary" />
+                      <span className="text-xs font-medium">{s}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button type="submit" className="w-full h-11 mt-4 rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5">
+                Send Invitation
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
