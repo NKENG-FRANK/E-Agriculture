@@ -36,7 +36,40 @@ function TeamManagement() {
     { id: 3, name: "Pierre Gasly", email: "pierre@farm.com", sections: [], status: "invited" },
   ]);
 
-  const [isAdding, setIsAdding] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<SubUser | null>(null);
+
+  const handleEdit = (user: SubUser) => {
+    setEditingUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setUsers(users.filter(u => u.id !== id));
+  };
+
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const selectedSections = Array.from(formData.getAll("sections")) as Section[];
+
+    if (editingUser) {
+      setUsers(users.map(u => u.id === editingUser.id ? { ...u, name, email, sections: selectedSections } : u));
+    } else {
+      const newUser: SubUser = {
+        id: Date.now(),
+        name,
+        email,
+        sections: selectedSections,
+        status: "invited"
+      };
+      setUsers([...users, newUser]);
+    }
+    setIsModalOpen(false);
+    setEditingUser(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -46,7 +79,7 @@ function TeamManagement() {
           <p className="text-sm text-muted-foreground">Manage your farm staff and allocate their responsibilities.</p>
         </div>
         <button 
-          onClick={() => setIsAdding(true)}
+          onClick={() => { setEditingUser(null); setIsModalOpen(true); }}
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
         >
           <UserPlus className="h-4 w-4" /> Add Sub-user
@@ -92,10 +125,16 @@ function TeamManagement() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors">
+                      <button 
+                        onClick={() => handleEdit(user)}
+                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+                      >
                         <LayoutGrid className="h-4 w-4" />
                       </button>
-                      <button className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
+                      <button 
+                        onClick={() => handleDelete(user.id)}
+                        className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -134,37 +173,57 @@ function TeamManagement() {
         </div>
       </div>
 
-      {isAdding && (
+      {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-6">
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-glow">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">Add New Sub-user</h2>
-              <button onClick={() => setIsAdding(false)} className="p-1 hover:bg-muted rounded-full">
+              <h2 className="text-xl font-bold">{editingUser ? "Edit Sub-user" : "Add New Sub-user"}</h2>
+              <button onClick={() => { setIsModalOpen(false); setEditingUser(null); }} className="p-1 hover:bg-muted rounded-full">
                 <XCircle className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsAdding(false); }}>
+            <form className="space-y-4" onSubmit={handleSave}>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Full Name</label>
-                <input required type="text" placeholder="e.g. Jean Dupont" className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" />
+                <input 
+                  required 
+                  name="name"
+                  type="text" 
+                  defaultValue={editingUser?.name ?? ""}
+                  placeholder="e.g. Jean Dupont" 
+                  className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" 
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Email Address</label>
-                <input required type="email" placeholder="staff@farm.com" className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" />
+                <input 
+                  required 
+                  name="email"
+                  type="email" 
+                  defaultValue={editingUser?.email ?? ""}
+                  placeholder="staff@farm.com" 
+                  className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary" 
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Assign Sections</label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {["Crops", "Poultry", "Aquaculture"].map(s => (
                     <label key={s} className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors">
-                      <input type="checkbox" className="accent-primary" />
+                      <input 
+                        type="checkbox" 
+                        name="sections"
+                        value={s}
+                        defaultChecked={editingUser?.sections.includes(s as Section)}
+                        className="accent-primary" 
+                      />
                       <span className="text-xs font-medium">{s}</span>
                     </label>
                   ))}
                 </div>
               </div>
               <button type="submit" className="w-full h-11 mt-4 rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5">
-                Send Invitation
+                {editingUser ? "Save Changes" : "Send Invitation"}
               </button>
             </form>
           </div>
