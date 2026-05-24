@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Logo } from "@/components/Logo";
 import { Sprout } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -17,10 +18,19 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"admin" | "owner" | "sub-user">("owner");
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/dashboard" });
+    // In a real app, we'd check credentials and role here
+    if (role === "admin") {
+      navigate({ to: "/dashboard/admin" });
+    } else if (role === "sub-user") {
+      // Simulate sub-user state for the demo
+      navigate({ to: "/dashboard", search: { role: "sub-user" } });
+    } else {
+      navigate({ to: "/dashboard" });
+    }
   };
 
   return (
@@ -54,9 +64,30 @@ function LoginPage() {
 
           <form onSubmit={submit} className="mt-8 space-y-4">
             <div>
+              <label className="mb-1.5 block text-sm font-medium">I am a...</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(["admin", "owner", "sub-user"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={cn(
+                      "flex flex-col items-center justify-center rounded-lg border py-2 text-[10px] font-bold uppercase tracking-wider transition-all",
+                      role === r
+                        ? "border-primary bg-primary/10 text-primary shadow-sm"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    {r.replace("-", " ")}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
               <label className="mb-1.5 block text-sm font-medium">Email</label>
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@farm.com"
@@ -67,6 +98,7 @@ function LoginPage() {
               <label className="mb-1.5 block text-sm font-medium">Password</label>
               <input
                 type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -89,8 +121,8 @@ function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            New to SFMS?{" "}
-            <Link to="/register" className="font-semibold text-primary hover:underline">Create an account</Link>
+            Want to join SFMS?{" "}
+            <Link to="/book-a-meeting" className="font-semibold text-primary hover:underline">Book a Consultation</Link>
           </p>
         </div>
       </div>
