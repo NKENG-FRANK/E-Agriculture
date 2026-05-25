@@ -9,9 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BookAMeetingRouteImport } from './routes/book-a-meeting'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardZonesRouteImport } from './routes/dashboard.zones'
@@ -22,13 +22,9 @@ import { Route as DashboardControlRouteImport } from './routes/dashboard.control
 import { Route as DashboardAquacultureRouteImport } from './routes/dashboard.aquaculture'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
 import { Route as DashboardAlertsRouteImport } from './routes/dashboard.alerts'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardZonesZoneIdRouteImport } from './routes/dashboard.zones.$zoneId'
 
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -37,6 +33,11 @@ const LoginRoute = LoginRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookAMeetingRoute = BookAMeetingRouteImport.update({
+  id: '/book-a-meeting',
+  path: '/book-a-meeting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -89,6 +90,11 @@ const DashboardAlertsRoute = DashboardAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardZonesZoneIdRoute = DashboardZonesZoneIdRouteImport.update({
   id: '/$zoneId',
   path: '/$zoneId',
@@ -97,9 +103,10 @@ const DashboardZonesZoneIdRoute = DashboardZonesZoneIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/book-a-meeting': typeof BookAMeetingRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/alerts': typeof DashboardAlertsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/aquaculture': typeof DashboardAquacultureRoute
@@ -113,8 +120,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/book-a-meeting': typeof BookAMeetingRoute
   '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/alerts': typeof DashboardAlertsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/aquaculture': typeof DashboardAquacultureRoute
@@ -129,9 +137,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/book-a-meeting': typeof BookAMeetingRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/alerts': typeof DashboardAlertsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/aquaculture': typeof DashboardAquacultureRoute
@@ -147,9 +156,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/book-a-meeting'
     | '/dashboard'
     | '/login'
-    | '/register'
+    | '/dashboard/admin'
     | '/dashboard/alerts'
     | '/dashboard/analytics'
     | '/dashboard/aquaculture'
@@ -163,8 +173,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/book-a-meeting'
     | '/login'
-    | '/register'
+    | '/dashboard/admin'
     | '/dashboard/alerts'
     | '/dashboard/analytics'
     | '/dashboard/aquaculture'
@@ -178,9 +189,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/book-a-meeting'
     | '/dashboard'
     | '/login'
-    | '/register'
+    | '/dashboard/admin'
     | '/dashboard/alerts'
     | '/dashboard/analytics'
     | '/dashboard/aquaculture'
@@ -195,20 +207,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BookAMeetingRoute: typeof BookAMeetingRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
-  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -221,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book-a-meeting': {
+      id: '/book-a-meeting'
+      path: '/book-a-meeting'
+      fullPath: '/book-a-meeting'
+      preLoaderRoute: typeof BookAMeetingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -293,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAlertsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/zones/$zoneId': {
       id: '/dashboard/zones/$zoneId'
       path: '/$zoneId'
@@ -316,6 +335,7 @@ const DashboardZonesRouteWithChildren = DashboardZonesRoute._addFileChildren(
 )
 
 interface DashboardRouteChildren {
+  DashboardAdminRoute: typeof DashboardAdminRoute
   DashboardAlertsRoute: typeof DashboardAlertsRoute
   DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardAquacultureRoute: typeof DashboardAquacultureRoute
@@ -328,6 +348,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdminRoute: DashboardAdminRoute,
   DashboardAlertsRoute: DashboardAlertsRoute,
   DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardAquacultureRoute: DashboardAquacultureRoute,
@@ -345,9 +366,9 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BookAMeetingRoute: BookAMeetingRoute,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

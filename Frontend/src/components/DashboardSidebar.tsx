@@ -1,6 +1,8 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useSearch } from "@tanstack/react-router";
 import {
   LayoutDashboard,
+  ShieldCheck,
+  Users,
   Map,
   Sprout,
   Bird,
@@ -10,12 +12,17 @@ import {
   Bell,
   Settings,
   LogOut,
+  MessageSquare,
+  LandPlot,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard/admin?tab=requests", label: "Pending Requests", icon: MessageSquare },
+  { to: "/dashboard/admin?tab=farms", label: "Farm Management", icon: LandPlot },
+  { to: "/dashboard/admin?tab=owners", label: "Owner Management", icon: Users },
   { to: "/dashboard/crops", label: "Crops", icon: Sprout },
   { to: "/dashboard/poultry", label: "Poultry", icon: Bird },
   { to: "/dashboard/aquaculture", label: "Aquaculture", icon: Fish },
@@ -23,11 +30,55 @@ const navItems = [
   { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/dashboard/control", label: "Control Panel", icon: Sliders },
   { to: "/dashboard/alerts", label: "Alerts", icon: Bell },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard/settings", label: "Team Management", icon: Users },
 ] as const;
 
 export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { pathname } = useLocation();
+  const search = useSearch({ from: "/dashboard" }) as { role?: string };
+
+  // Mock role check - in a real app, this would come from an auth hook/context
+  const userRole: "admin" | "owner" | "sub-user" = pathname.includes("/admin") 
+    ? "admin" 
+    : search.role === "sub-user"
+      ? "sub-user" 
+      : "owner";
+
+  // Mock assigned sections for sub-user
+  const assignedSections = ["/dashboard/crops", "/dashboard/poultry"];
+
+  const filteredNavItems = navItems.filter(item => {
+    // Admin role only sees the 3 specific admin options
+    if (userRole === "admin") {
+      return [
+        "/dashboard/admin?tab=requests",
+        "/dashboard/admin?tab=farms",
+        "/dashboard/admin?tab=owners"
+      ].includes(item.to);
+    }
+    
+    // Non-admin users never see the admin options
+    if ([
+      "/dashboard/admin?tab=requests",
+      "/dashboard/admin?tab=farms",
+      "/dashboard/admin?tab=owners"
+    ].includes(item.to)) {
+      return false;
+    }
+    
+    // Team management only for owners (and admins, though admins won't reach here)
+    if (item.to === "/dashboard/settings") return userRole !== "sub-user";
+
+    // Sub-users only see their assigned sections
+    if (userRole === "sub-user") {
+      const sectionRoutes = ["/dashboard/crops", "/dashboard/poultry", "/dashboard/aquaculture"];
+      if (sectionRoutes.includes(item.to)) {
+        return assignedSections.includes(item.to);
+      }
+    }
+
+    return true;
+  });
 
   return (
     <>
@@ -47,7 +98,7 @@ export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: ()
           <Logo />
         </div>
         <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
             return (
