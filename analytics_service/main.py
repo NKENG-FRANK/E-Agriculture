@@ -1,10 +1,10 @@
 from dotenv import load_dotenv
 load_dotenv()  # Loads DATABASE_URL from .env before database.py reads it
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List,Optional
 
 from database import engine, get_db, Base
 from models import (
@@ -70,19 +70,26 @@ def ingest(payload: SensorReadingIn, db: Session = Depends(get_db)):
     )
 
 
+@app.get("/devices",response_model=List[str])
+def devices(db:Session = Depends(get_db)):
+    rows = db.query(distinct(SensorReading.device)).filter(SensorReading.device.isnot(None)).all()
+    return sorted([row[0]for row in rows])
+
+
 @app.get("/analytics", response_model=AnalyticsResponse)
-def analytics(db: Session = Depends(get_db)):
+def analytics( devices: Optional[str]= Query(None,description="Filter by device name"),
+               db: Session = Depends(get_db)):
     """
     Returns per-sensor averages + anomaly flags on the latest reading.
     """
     return AnalyticsResponse(
-        averages=compute_averages(db),
-        latest_anomalies=get_latest_anomalies(db),
+        averages=compute_averages(db,devices=devices),
+        latest_anomalies=get_latest_anomalies(db,devices=devices),
     )
 
 
 @app.get("/readings", response_model=List[SensorReadingOut])
-def readings(limit: int = 100, db: Session = Depends(get_db)):
+def readings(limit: int = 100, device: Optional[str] = Query(None, description="Filter by device name"), db: Session = Depends(get_db)):
     """
     Returns the most recent `limit` readings in ascending order.
     Use ?limit=N to control how many are returned (max 1000).
@@ -90,8 +97,12 @@ def readings(limit: int = 100, db: Session = Depends(get_db)):
     if limit < 1 or limit > 1000:
         raise HTTPException(status_code=400, detail="limit must be between 1 and 1000")
 
+    query = db.query(SensorReading)
+
+    if device:
+        query = query.filter(SensorReading.device == device)
     results = (
-        db.query(SensorReading)
+        query
         .order_by(SensorReading.created_at.desc())
         .limit(limit)
         .all()

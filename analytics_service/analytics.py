@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-
+from typing import Optional
 from models import SensorReading, AnomalyFlags, Averages, LatestAnomalies
 from Threshold import THRESHOLDS
 
@@ -13,14 +13,20 @@ def _is_anomaly(field: str, value: float) -> bool:
     return value < bounds["min"] or value > bounds["max"]
 
 
+def filter_query(db: Session, device: Optional[str]):
+    """Return a query scoped to a device if provided, otherwise all devices."""
+    q = db.query(SensorReading)
+    if device:
+        q = q.filter(SensorReading.device == device)
+    return q
 # ── Public Functions ──────────────────────────────────────────────────────────
 
-def compute_averages(db: Session) -> Averages:
+def compute_averages(db: Session,device:Optional[str]=None) -> Averages:
     """
     Return the mean value for each sensor field across ALL stored readings.
     Returns None per field if no data exists.
     """
-    result = db.query(
+    result = filter_query(db,device).with_entities(func.avg(Averages.reading))(
         func.avg(SensorReading.temperature).label("temperature"),
         func.avg(SensorReading.humidity).label("humidity"),
         func.avg(SensorReading.soil_moisture).label("soil_moisture"),
@@ -48,13 +54,13 @@ def detect_anomalies(reading: SensorReading) -> AnomalyFlags:
     )
 
 
-def get_latest_anomalies(db: Session) -> LatestAnomalies:
+def get_latest_anomalies(db: Session,device:Optional[str]=None) -> LatestAnomalies:
     """
     Fetch the most recent reading and run anomaly detection on it.
     Gracefully handles an empty DB.
     """
     latest = (
-        db.query(SensorReading)
+        filter_query(db, device)
         .order_by(SensorReading.created_at.desc())
         .first()
     )
