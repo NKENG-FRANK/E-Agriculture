@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from user_mannagement_service.core.config import settings
-from user_mannagement_service.api.v1 import auth, protected
+from core.config import settings
+from api.v1 import auth, protected,owners,farms,sub_user
 
+#NB FRANC I REMOVED ROW LEVEL SECURITY ON CONSULTATIONS TABLE TO ALLOW INSERTS WITHOUT AUTH FOR BOOKING CONSULTATIONS. THIS IS NOT RECOMMENDED FOR PRODUCTION. IN PRODUCTION, WE SHOULD IMPLEMENT A SECURE WAY TO ALLOW CONSULTATION BOOKINGS WITHOUT COMPROMISING SECURITY.
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
@@ -23,7 +24,9 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(protected.router, prefix=settings.API_V1_PREFIX)
-
+app.include_router(owners.router, prefix=settings.API_V1_PREFIX)
+app.include_router(farms.router, prefix=settings.API_V1_PREFIX)
+app.include_router(sub_user.router, prefix=settings.API_V1_PREFIX)
 @app.get("/")
 async def root():
     return {
@@ -38,4 +41,4 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("user_mannagement_service.main:app", host="0.0.0.0", port=8000, reload=settings.DEBUG)
+    uvicorn.run("user_mannagement_service.main:app", host="0.0.0.0", port=8001, reload=settings.DEBUG)

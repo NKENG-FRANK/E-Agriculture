@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from typing import Optional, Annotated
-from user_mannagement_service.core.dependencies import get_current_user, get_current_admin_user, get_current_optional_user, require_permission
+from core.dependencies import get_current_user, get_current_admin_user, get_current_optional_user, require_permission
 
 router = APIRouter(prefix="/protected", tags=["protected"])
 

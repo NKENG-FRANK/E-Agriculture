@@ -1,6 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
+from pydantic_extra_types.phone_numbers import PhoneNumber
+from .farm import FarmType
+
 
 
 class UserBase(BaseModel):
@@ -32,3 +35,16 @@ class User(UserBase):
 
 class UserResponse(User):
     pass
+
+
+class UserBookConsultation(BaseModel):
+    fullname: str
+    phonenumber:PhoneNumber
+    email:EmailStr
+    farm_type: FarmType
+    message: str
+
+
+
+    class Config:
+        from_attributes = True

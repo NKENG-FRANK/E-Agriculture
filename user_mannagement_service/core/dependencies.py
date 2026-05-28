@@ -1,12 +1,12 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, Dict, Any
-from user_mannagement_service.core.security import decode_token
-from user_mannagement_service.core.config import settings
+from core.security import decode_token
+from core.config import settings
 from supabase import create_client
 
 # Initialize Supabase client
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 security = HTTPBearer(auto_error=False)
 

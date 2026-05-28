@@ -5,7 +5,7 @@ from core.config import settings
 # Use SERVICE_ROLE key (never anon key)
 supabase_admin = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
-user_email = "tabouguiangnowa.yoancabrel@ictuniversity.edu.cm"
+user_email = "ruben123@gmail.com"
 
 # Fetch the user ID by email
 users = supabase_admin.auth.admin.list_users()

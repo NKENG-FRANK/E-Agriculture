@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
@@ -5,7 +7,7 @@ import os
 class Settings(BaseSettings):
     # Supabase
     SUPABASE_URL: str 
-    SUPABASE_KEY: str 
+    SUPABASE_ANON_KEY: str
     SUPABASE_JWT_SECRET:str 
     USE_REDIS: bool = False
     ALLOW_EMPTY_PASSWORD: str = "yes"
@@ -22,7 +24,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     class Config:
-        env_file = ".env"
+        env_file = Path(__file__).parent.parent.parent / ".env"
         env_file_encoding = "utf-8"
         extra = "ignore" 
 

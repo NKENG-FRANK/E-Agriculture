@@ -2,7 +2,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-from user_mannagement_service.core.config import settings
+from core.config import settings
 
 # Argon2 password hashing setup
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
