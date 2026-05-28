@@ -101,10 +101,20 @@ export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: ()
           {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
+            
+            // Extract base path if item.to has search params
+            const [basePath] = item.to.split("?");
+            
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={basePath as any}
+                search={(prev: any) => ({ 
+                  ...prev, 
+                  role: userRole,
+                  // Keep tab if it exists in the original item.to
+                  tab: item.to.includes("tab=") ? item.to.split("tab=")[1] : prev.tab 
+                })}
                 onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
