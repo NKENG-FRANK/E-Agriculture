@@ -1,4 +1,12 @@
 services:
+  # Infrastructure
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Core Services
   analytics-service:
     build: ./analytics_service
     ports:
@@ -21,4 +29,39 @@ services:
       - "8002:8002"
     env_file:
       - ./ai_insights_service/.env
+    restart: always
+
+  # Alert System
+  alert-api:
+    build: ./alert_service
+    ports:
+      - "8003:8003"
+    env_file:
+      - ./alert_service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: always
+
+  alert-worker:
+    build: ./alert_service
+    command: celery -A celery_app.celery_app worker --loglevel=info
+    env_file:
+      - ./alert_service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: always
+
+  alert-beat:
+    build: ./alert_service
+    command: celery -A celery_app.celery_app beat --loglevel=info
+    env_file:
+      - ./alert_service/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
     restart: always
