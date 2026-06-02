@@ -1,29 +1,67 @@
 pipeline {
     agent any
 
+    environment {
+        // Environment variables for the pipeline
+        BUN_PATH = "/usr/local/bin/bun" // Adjust this to your server's Bun path
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/NKENG-FRANK/E-Agriculture.git'
+                // Pulls the latest code from the configured SCM
+                checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Backend - Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                dir('Backend') {
+                    echo 'Installing Backend dependencies...'
+                    sh 'python -m pip install --upgrade pip'
+                    sh 'pip install -r requirements.txt'
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Frontend - Install & Build') {
             steps {
-                sh 'pytest'
+                dir('Frontend') {
+                    echo 'Installing Frontend dependencies & Building...'
+                    // Ensure Bun is in the path or use absolute path
+                    sh 'bun install'
+                    sh 'bun run build'
+                }
             }
         }
 
-        stage('Run App') {
+        stage('Backend - Run Tests') {
             steps {
-                sh 'uvicorn main:app --host 0.0.0.0 --port 8000 &'
+                dir('Backend') {
+                    echo 'Running Backend tests...'
+                    // Runs pytest (will look for tests/ directory or test_*.py files)
+                    sh 'pytest'
+                }
             }
+        }
+
+        stage('Deployment - Preview') {
+            steps {
+                echo 'Deployment stage - ready for production staging'
+                // Add deployment logic here (e.g., Cloudflare Pages, Docker, etc.)
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution finished.'
+        }
+        success {
+            echo 'Build and Tests passed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }

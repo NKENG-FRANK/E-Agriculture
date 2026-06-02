@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { 
   Users, 
@@ -15,6 +15,11 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/settings")({
+  validateSearch: (search: Record<string, unknown>): { role?: string } => {
+    return {
+      role: typeof search.role === "string" ? search.role : undefined,
+    };
+  },
   head: () => ({ meta: [{ title: "Team Management — SFMS" }] }),
   component: TeamManagement,
 });
@@ -30,6 +35,14 @@ interface SubUser {
 }
 
 function TeamManagement() {
+  const search = useSearch({ from: "/dashboard/settings" }) as { role?: string };
+  const userRole = search.role;
+
+  // Redirect sub-users away from Team Management
+  if (userRole === "sub-user") {
+    return <Navigate to="/dashboard" search={{ role: "sub-user" }} />;
+  }
+
   const [users, setUsers] = useState<SubUser[]>([
     { id: 1, name: "Jean Dupont", email: "jean@farm.com", sections: ["Crops"], status: "active" },
     { id: 2, name: "Marie Curie", email: "marie@farm.com", sections: ["Poultry", "Aquaculture"], status: "active" },
