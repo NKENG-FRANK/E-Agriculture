@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, Float, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -32,6 +33,8 @@ class SensorReading(Base):
 
     # Network
     wifi_rssi     = Column(Integer, nullable=True)   # dBm
+    
+    farm_id       = Column(UUID(as_uuid=True), nullable=True)
 
 
 # ── Pydantic Schemas ───────────────────────────────────────────────────────────
@@ -50,6 +53,7 @@ class SensorReadingIn(BaseModel):
     uv_status:     Optional[str]   = Field(None,  description="UV status string e.g. LOW")
     soil_status:   Optional[str]   = Field(None,  description="Soil status string e.g. DRY")
     wifi_rssi:     Optional[int]   = Field(None,  description="WiFi signal strength in dBm")
+    farm_id:       Optional[str]   = Field(None,  description="UUID of the farm")
 
 
 class AnomalyFlags(BaseModel):
