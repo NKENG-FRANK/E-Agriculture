@@ -42,7 +42,7 @@ app.add_middleware(
 @app.post("/ingest", response_model=IngestResponse, status_code=201)
 def ingest(payload: SensorReadingIn, db: Session = Depends(get_db)):
     """
-    Receives sensor JSON from the Raspberry Pi bridge.
+    Receives sensor JSON.
     Stores all fields, runs anomaly detection, returns flags.
     """
     reading = SensorReading(
@@ -56,6 +56,7 @@ def ingest(payload: SensorReadingIn, db: Session = Depends(get_db)):
         uv_status=payload.uv_status,
         soil_status=payload.soil_status,
         wifi_rssi=payload.wifi_rssi,
+        farm_id=payload.farm_id
     )
     db.add(reading)
     db.commit()
