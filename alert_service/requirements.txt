@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+celery[redis]
+redis
+resend
+httpx
+python-dotenv
+jinja2        # for email templates
