@@ -1,0 +1,96 @@
+# Alert API
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alert-api
+  namespace: e-agri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alert-api
+  template:
+    metadata:
+      labels:
+        app: alert-api
+    spec:
+      containers:
+      - name: alert-api
+        image: e-agri/alert-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8003
+        envFrom:
+        - configMapRef:
+            name: e-agri-config
+        - secretRef:
+            name: e-agri-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alert-api-service
+  namespace: e-agri
+spec:
+  selector:
+    app: alert-api
+  ports:
+    - protocol: TCP
+      port: 8003
+      targetPort: 8003
+
+---
+# Alert Worker
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alert-worker
+  namespace: e-agri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alert-worker
+  template:
+    metadata:
+      labels:
+        app: alert-worker
+    spec:
+      containers:
+      - name: alert-worker
+        image: e-agri/alert-service:latest
+        imagePullPolicy: IfNotPresent
+        command: ["celery", "-A", "celery_app.celery_app", "worker", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: e-agri-config
+        - secretRef:
+            name: e-agri-secrets
+
+---
+# Alert Beat (Scheduler)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alert-beat
+  namespace: e-agri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alert-beat
+  template:
+    metadata:
+      labels:
+        app: alert-beat
+    spec:
+      containers:
+      - name: alert-beat
+        image: e-agri/alert-service:latest
+        imagePullPolicy: IfNotPresent
+        command: ["celery", "-A", "celery_app.celery_app", "beat", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: e-agri-config
+        - secretRef:
+            name: e-agri-secrets

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management-service
+  namespace: e-agri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management-service
+  template:
+    metadata:
+      labels:
+        app: user-management-service
+    spec:
+      containers:
+      - name: user-management-service
+        image: e-agri/user-management-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8001
+        env:
+        - name: SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: SUPABASE_URL
+        - name: SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: SUPABASE_ANON_KEY
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: SUPABASE_SERVICE_ROLE_KEY
+        - name: SUPABASE_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: SUPABASE_JWT_SECRET
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: e-agri-config
+              key: APP_NAME
+        - name: API_V1_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: e-agri-config
+              key: API_V1_PREFIX
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: e-agri-config
+              key: DEBUG
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management-service
+  namespace: e-agri
+spec:
+  selector:
+    app: user-management-service
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001

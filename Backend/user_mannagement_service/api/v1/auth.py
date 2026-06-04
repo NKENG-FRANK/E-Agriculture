@@ -2,10 +2,9 @@ from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException,Header,Security
 from pydantic import BaseModel, EmailStr
-from pydantic_extra_types.phone_numbers import PhoneNumber
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
-from core.security import hash_password, create_access_token, create_refresh_token
+from core.security import create_access_token, create_refresh_token
 from core.config import settings
 from supabase import create_client
 from models.farm import FarmType

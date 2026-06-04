@@ -41,4 +41,4 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("user_mannagement_service.main:app", host="0.0.0.0", port=8001, reload=settings.DEBUG)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=settings.DEBUG)

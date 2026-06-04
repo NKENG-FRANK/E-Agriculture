@@ -1,4 +1,6 @@
 import logging
+import time
+from sqlalchemy.exc import OperationalError
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,14 +16,30 @@ from services.ai_engine import AIEngine
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AI-Insights-Service")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="E-Agri AI Insights Service",
     description="Refactored AI Insights Service with 3 core endpoints.",
     version="2.0.0"
 )
+
+# Robust database initialization
+def init_db():
+    retries = 5
+    while retries > 0:
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("Successfully connected to the database and created tables.")
+            break
+        except OperationalError as e:
+            retries -= 1
+            logger.warning(f"Database connection failed. Retrying in 5 seconds... ({retries} retries left)")
+            time.sleep(5)
+    if retries == 0:
+        logger.error("Could not connect to the database after multiple attempts.")
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 # CORS Middleware
 app.add_middleware(

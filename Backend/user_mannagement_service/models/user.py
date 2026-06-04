@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
-from pydantic_extra_types.phone_numbers import PhoneNumber
 from .farm import FarmType
 
 
@@ -39,7 +38,7 @@ class UserResponse(User):
 
 class UserBookConsultation(BaseModel):
     fullname: str
-    phonenumber:PhoneNumber
+    phonenumber: str
     email:EmailStr
     farm_type: FarmType
     message: str

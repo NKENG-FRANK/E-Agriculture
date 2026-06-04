@@ -16,6 +16,9 @@ from models import (
 )
 from analytics import compute_averages, detect_anomalies, get_latest_anomalies
 
+import time
+from sqlalchemy.exc import OperationalError
+
 # ── App Init ──────────────────────────────────────────────────────────────────
 
 app = FastAPI(
@@ -24,7 +27,24 @@ app = FastAPI(
     version="1.0.0",
 )
 
-Base.metadata.create_all(bind=engine)
+# Robust database initialization
+def init_db():
+    retries = 5
+    while retries > 0:
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("Successfully connected to the database and created tables.")
+            break
+        except OperationalError as e:
+            retries -= 1
+            print(f"Database connection failed. Retrying in 5 seconds... ({retries} retries left)")
+            time.sleep(5)
+    if retries == 0:
+        print("Could not connect to the database after multiple attempts.")
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 
 # ── CORS ──────────────────────────────────────────────────────────────────────

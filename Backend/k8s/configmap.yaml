@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: e-agri-config
+  namespace: e-agri
+data:
+  # URLs
+  SIGNUP_URL: "http://localhost:5173/register"
+  ANALYTICS_URL: "http://analytics-service:8000"
+  REDIS_URL: "redis://redis-service:6379/0"
+  
+  # App Settings
+  DEBUG: "true"
+  APP_NAME: "E-Agri Management System"
+  API_V1_PREFIX: "/api/v1"
+  RESEND_FROM_EMAIL: "onboarding@resend.dev"

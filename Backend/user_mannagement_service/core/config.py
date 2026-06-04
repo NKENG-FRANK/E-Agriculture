@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     class Config:
-        env_file = Path(__file__).parent.parent.parent / ".env"
+        env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore" 
 

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-insights-service
+  namespace: e-agri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-insights-service
+  template:
+    metadata:
+      labels:
+        app: ai-insights-service
+    spec:
+      containers:
+      - name: ai-insights-service
+        image: e-agri/ai-insights-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8002
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: DATABASE_URL
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: e-agri-secrets
+              key: GROQ_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-insights-service
+  namespace: e-agri
+spec:
+  selector:
+    app: ai-insights-service
+  ports:
+    - protocol: TCP
+      port: 8002
+      targetPort: 8002
