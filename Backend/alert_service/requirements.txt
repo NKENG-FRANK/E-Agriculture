@@ -5,4 +5,6 @@ redis
 resend
 httpx
 python-dotenv
+pydantic-settings
 jinja2        # for email templates
+supabase
