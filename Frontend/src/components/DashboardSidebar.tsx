@@ -109,12 +109,12 @@ export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: ()
               <Link
                 key={item.to}
                 to={basePath as any}
-                search={(prev: any) => ({ 
+                search={((prev: any) => ({ 
                   ...prev, 
                   role: userRole,
                   // Keep tab if it exists in the original item.to
                   tab: item.to.includes("tab=") ? item.to.split("tab=")[1] : prev.tab 
-                })}
+                })) as any}
                 onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
