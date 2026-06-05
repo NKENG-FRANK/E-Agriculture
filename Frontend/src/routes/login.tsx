@@ -20,7 +20,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"admin" | "owner" | "sub-user">("owner");
+  const [role, setRole] = useState<"admin" | "owner" | "sub_user">("owner");
   const [isLoading, setIsLoading] = useState(false);
 
   const submit = async (e: FormEvent) => {
@@ -89,7 +89,7 @@ function LoginPage() {
             <div>
               <label className="mb-1.5 block text-sm font-medium">I am a...</label>
               <div className="grid grid-cols-3 gap-2">
-                {(["admin", "owner", "sub-user"] as const).map((r) => (
+                {(["admin", "owner", "sub_user"] as const).map((r) => (
                   <button
                     key={r}
                     type="button"
@@ -101,7 +101,7 @@ function LoginPage() {
                         : "border-border bg-card text-muted-foreground hover:bg-muted"
                     )}
                   >
-                    {r.replace("-", " ")}
+                    {r.replace("_", " ")}
                   </button>
                 ))}
               </div>
