@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: e-agri-ingress
+  namespace: e-agri
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api/v1/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: user-management-service
+            port:
+              number: 8001
+      - path: /analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 8000
+      - path: /readings
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 8000
+      - path: /devices
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 8000
+      - path: /insights
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-insights-service
+            port:
+              number: 8002
+      - path: /alerts
+        pathType: Prefix
+        backend:
+          service:
+            name: alert-api-service
+            port:
+              number: 8003
