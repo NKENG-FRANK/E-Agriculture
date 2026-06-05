@@ -112,21 +112,9 @@ async def signup(user_data: UserSignup):
 @router.post("/login")
 async def login(user_data: UserLogin):
     try:
-        # Check if user exists in public.users and has the correct role first
-        user_record = supabase_db.table("users").select("id", "role").eq("email", user_data.email).execute()
-        
-        if not user_record.data:
-            # Fallback check if user exists in auth but not yet in public.users
-            # This can happen if signup succeeded but public table insert was manual
-            print(f"DEBUG: User {user_data.email} not found in public.users table")
-        else:
-            role = user_record.data[0].get("role")
-            if role != user_data.role.value:
-                raise HTTPException(status_code=403, detail=f"Role mismatch: You are registered as {role}")
-
-        # Authenticate with Supabase Auth
+        # 1. Use the anon client for signing in to get a proper session
         try:
-            auth_response = supabase_db.auth.sign_in_with_password({
+            auth_response = supabase_auth.auth.sign_in_with_password({
                 "email": user_data.email,
                 "password": user_data.password
             })
@@ -138,16 +126,23 @@ async def login(user_data: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         user = auth_response.user
+
+        # 2. Check role in public.users using the privileged client
+        user_record = supabase_db.table("users").select("role").eq("id", user.id).execute()
         
-        # Determine role (re-check or use previous check)
-        final_role = user_data.role.value
-        if user_record.data:
-            final_role = user_record.data[0].get("role")
+        if not user_record.data:
+            # Fallback if signup record is missing
+            print(f"DEBUG: User {user.id} not found in public.users table")
+            role = user_data.role.value
+        else:
+            role = user_record.data[0].get("role")
+            if role != user_data.role.value:
+                raise HTTPException(status_code=403, detail=f"Role mismatch: Access denied")
 
         expires = timedelta(days=30) if user_data.remember_me else None
 
         access_token = create_access_token(
-            {"sub": user.id, "email": user.email, "role": final_role},
+            {"sub": user.id, "email": user.email, "role": role},
             expires_delta=expires
         )
         refresh_token = create_refresh_token({"sub": user.id})
@@ -156,7 +151,7 @@ async def login(user_data: UserLogin):
             "access_token": access_token,
             "refresh_token": refresh_token,
             "token_type": "bearer",
-            "role": final_role,
+            "role": role,
         }
 
     except HTTPException:
