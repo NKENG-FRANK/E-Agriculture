@@ -6,12 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 dir('Backend') {
@@ -27,10 +21,11 @@ pipeline {
         stage('Import Images to K3s') {
             steps {
                 echo 'Importing images into K3s container runtime...'
-                sh 'sudo k3s ctr images import <(docker save e-agri/analytics-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/user-management-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/ai-insights-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/alert-service:latest)'
+                // Using pipe instead of process substitution for shell compatibility
+                sh 'docker save e-agri/analytics-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/user-management-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/ai-insights-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/alert-service:latest | sudo k3s ctr images import -'
             }
         }
 
