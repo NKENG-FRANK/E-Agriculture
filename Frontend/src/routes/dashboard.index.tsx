@@ -11,9 +11,9 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api } from "../lib/api";
 
 type SensorReading = {
   time: string;
