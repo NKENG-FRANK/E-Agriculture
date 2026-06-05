@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
+import { Route as RegisterRouteImport } from "./routes/register"
 import { Route as LoginRouteImport } from "./routes/login"
 import { Route as DashboardRouteImport } from "./routes/dashboard"
 import { Route as BookAMeetingRouteImport } from "./routes/book-a-meeting"
@@ -25,6 +26,11 @@ import { Route as DashboardAlertsRouteImport } from "./routes/dashboard.alerts"
 import { Route as DashboardAdminRouteImport } from "./routes/dashboard.admin"
 import { Route as DashboardZonesZoneIdRouteImport } from "./routes/dashboard.zones.$zoneId"
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: "/register",
+  path: "/register",
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: "/login",
   path: "/login",
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   "/book-a-meeting": typeof BookAMeetingRoute
   "/dashboard": typeof DashboardRouteWithChildren
   "/login": typeof LoginRoute
+  "/register": typeof RegisterRoute
   "/dashboard/admin": typeof DashboardAdminRoute
   "/dashboard/alerts": typeof DashboardAlertsRoute
   "/dashboard/analytics": typeof DashboardAnalyticsRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/book-a-meeting": typeof BookAMeetingRoute
   "/login": typeof LoginRoute
+  "/register": typeof RegisterRoute
   "/dashboard/admin": typeof DashboardAdminRoute
   "/dashboard/alerts": typeof DashboardAlertsRoute
   "/dashboard/analytics": typeof DashboardAnalyticsRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   "/book-a-meeting": typeof BookAMeetingRoute
   "/dashboard": typeof DashboardRouteWithChildren
   "/login": typeof LoginRoute
+  "/register": typeof RegisterRoute
   "/dashboard/admin": typeof DashboardAdminRoute
   "/dashboard/alerts": typeof DashboardAlertsRoute
   "/dashboard/analytics": typeof DashboardAnalyticsRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | "/book-a-meeting"
     | "/dashboard"
     | "/login"
+    | "/register"
     | "/dashboard/admin"
     | "/dashboard/alerts"
     | "/dashboard/analytics"
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | "/"
     | "/book-a-meeting"
     | "/login"
+    | "/register"
     | "/dashboard/admin"
     | "/dashboard/alerts"
     | "/dashboard/analytics"
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | "/book-a-meeting"
     | "/dashboard"
     | "/login"
+    | "/register"
     | "/dashboard/admin"
     | "/dashboard/alerts"
     | "/dashboard/analytics"
@@ -210,10 +222,18 @@ export interface RootRouteChildren {
   BookAMeetingRoute: typeof BookAMeetingRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/register": {
+      id: "/register"
+      path: "/register"
+      fullPath: "/register"
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     "/login": {
       id: "/login"
       path: "/login"
@@ -369,6 +389,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookAMeetingRoute: BookAMeetingRoute,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

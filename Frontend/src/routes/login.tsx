@@ -3,6 +3,8 @@ import { useState, type FormEvent } from "react";
 import { Logo } from "@/components/Logo";
 import { Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -19,17 +21,38 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "owner" | "sub-user">("owner");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    // In a real app, we'd check credentials and role here
-    if (role === "admin") {
-      navigate({ to: "/dashboard/admin" });
-    } else if (role === "sub-user") {
-      // Simulate sub-user state for the demo
-      navigate({ to: "/dashboard", search: { role: "sub-user" } });
-    } else {
-      navigate({ to: "/dashboard" });
+    setIsLoading(true);
+
+    try {
+      const response = await api.auth.login({
+        email,
+        password,
+        role,
+        remember_me: true, // simplified for now
+      });
+
+      // Store token and user info
+      localStorage.setItem("sfms_token", response.access_token);
+      localStorage.setItem("sfms_role", response.role);
+
+      toast.success("Welcome back!");
+
+      // Navigate based on role
+      if (response.role === "admin") {
+        navigate({ to: "/dashboard/admin" });
+      } else if (response.role === "sub_user") {
+        navigate({ to: "/dashboard", search: { role: "sub-user" } });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -114,13 +137,18 @@ function LoginPage() {
             </div>
             <button
               type="submit"
-              className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+              disabled={isLoading}
+              className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
             >
-              Sign in
+              {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
+            Already have an invite?{" "}
+            <Link to="/register" className="font-semibold text-primary hover:underline">Register here</Link>
+          </p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             Want to join SFMS?{" "}
             <Link to="/book-a-meeting" className="font-semibold text-primary hover:underline">Book a Consultation</Link>
           </p>

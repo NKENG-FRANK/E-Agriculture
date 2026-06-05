@@ -60,42 +60,59 @@ async def book_consultation(consultation_data: UserBookConsultation):
 
 @router.post("/signup")
 async def signup(user_data: UserSignup):
-    existing = supabase_db.table("users").select("*").eq("email", user_data.email).execute()  # ← supabase_db
+    existing = supabase_db.table("users").select("*").eq("email", user_data.email).execute()
     if existing.data:
         raise HTTPException(status_code=400, detail="Email already registered")
     try:
-        auth_user = supabase_auth.auth.sign_up({  # ← supabase_auth
+        # Use admin client to create and auto-confirm user
+        auth_user = supabase_db.auth.admin.create_user({
             "email": user_data.email,
             "password": user_data.password,
-            "options": {
-                "data": {
-                    "first_name": user_data.first_name,
-                    "last_name": user_data.last_name,
-                    "post": user_data.post,
-                    "role": user_data.role
-                }
+            "email_confirm": True, # Bypasses email verification
+            "user_metadata": {
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "post": user_data.post,
+                "role": user_data.role
             }
         })
-        if auth_user.session is None:
-            return {
-                "message": "User created. Please check your email to confirm your account.",
-                "user_id": auth_user.user.id
-            }
+        
+        # After creation, generate tokens immediately
         access_token = create_access_token({
             "sub": auth_user.user.id,
             "email": user_data.email,
             "role": user_data.role
         })
         refresh_token = create_refresh_token({"sub": auth_user.user.id})
-        return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+        
+        return {
+            "message": "Account created successfully.",
+            "access_token": access_token, 
+            "refresh_token": refresh_token, 
+            "token_type": "bearer"
+        }
     except Exception as e:
+        print("SIGNUP ERROR:", str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/login")
 async def login(user_data: UserLogin):
     try:
-        auth_response = supabase_auth.auth.sign_in_with_password({  # ← supabase_auth
+        # Check if user exists in public.users and has the correct role first
+        user_record = supabase_db.table("users").select("id", "role").eq("email", user_data.email).execute()
+        
+        if not user_record.data:
+            # Fallback check if user exists in auth but not yet in public.users
+            # This can happen if signup succeeded but public table insert was manual
+            print(f"DEBUG: User {user_data.email} not found in public.users table")
+        else:
+            role = user_record.data[0].get("role")
+            if role != user_data.role.value:
+                raise HTTPException(status_code=403, detail=f"Role mismatch: You are registered as {role}")
+
+        # Authenticate with Supabase Auth
+        auth_response = supabase_auth.auth.sign_in_with_password({
             "email": user_data.email,
             "password": user_data.password
         })
@@ -104,17 +121,16 @@ async def login(user_data: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         user = auth_response.user
-
-        user_record = supabase_db.table("users").select("role").eq("id", user.id).execute()  # ← supabase_db
-        role = user_record.data[0].get("role", "sub_user") if user_record.data else "sub_user"
-
-        if role != user_data.role.value:
-            raise HTTPException(status_code=403, detail="Role mismatch — access denied")
+        
+        # Determine role (re-check or use previous check)
+        final_role = user_data.role.value
+        if user_record.data:
+            final_role = user_record.data[0].get("role")
 
         expires = timedelta(days=30) if user_data.remember_me else None
 
         access_token = create_access_token(
-            {"sub": user.id, "email": user.email, "role": role},
+            {"sub": user.id, "email": user.email, "role": final_role},
             expires_delta=expires
         )
         refresh_token = create_refresh_token({"sub": user.id})
@@ -123,13 +139,15 @@ async def login(user_data: UserLogin):
             "access_token": access_token,
             "refresh_token": refresh_token,
             "token_type": "bearer",
-            "role": role,
+            "role": final_role,
         }
 
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
         print("LOGIN ERROR:", str(e))
+        print(traceback.format_exc())
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
 bearer_scheme = HTTPBearer()

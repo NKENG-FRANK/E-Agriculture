@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Droplets, Thermometer, Wind, Waves, TrendingUp, TrendingDown } from "lucide-react";
+import { Droplets, Thermometer, Wind, Waves, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -12,6 +12,8 @@ import {
   Area,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 type SensorReading = {
   time: string;
@@ -41,7 +43,20 @@ const statusStyle: Record<Status, string> = {
 };
 
 function DashboardOverview() {
-  const history: SensorReading[] = [];
+  const { data: readings = [], isLoading, refetch } = useQuery({
+    queryKey: ["readings"],
+    queryFn: () => api.analytics.getReadings(20),
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
+
+  const history: SensorReading[] = readings.map((r: any) => ({
+    time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    moisture: r.soil_moisture,
+    temperature: r.temperature,
+    humidity: r.humidity,
+    oxygen: 7.2, // Mocked as it's not in the main sensor payload yet
+  }));
+
   const latest: SensorReading = history[history.length - 1] ?? {
     time: "-",
     moisture: 0,
@@ -50,6 +65,8 @@ function DashboardOverview() {
     oxygen: 0,
   };
 
+  const prev: SensorReading = history[history.length - 2] ?? latest;
+
   const cards = [
     {
       key: "moisture" as const,
@@ -57,7 +74,7 @@ function DashboardOverview() {
       value: `${latest.moisture}%`,
       icon: Droplets,
       raw: latest.moisture,
-      prev: history[history.length - 2]?.moisture ?? 0,
+      prev: prev.moisture,
     },
     {
       key: "temperature" as const,
@@ -65,7 +82,7 @@ function DashboardOverview() {
       value: `${latest.temperature}°C`,
       icon: Thermometer,
       raw: latest.temperature,
-      prev: history[history.length - 2]?.temperature ?? 0,
+      prev: prev.temperature,
     },
     {
       key: "humidity" as const,
@@ -73,7 +90,7 @@ function DashboardOverview() {
       value: `${latest.humidity}%`,
       icon: Wind,
       raw: latest.humidity,
-      prev: history[history.length - 2]?.humidity ?? 0,
+      prev: prev.humidity,
     },
     {
       key: "oxygen" as const,
@@ -81,7 +98,7 @@ function DashboardOverview() {
       value: `${latest.oxygen} mg/L`,
       icon: Waves,
       raw: latest.oxygen,
-      prev: history[history.length - 2]?.oxygen ?? 0,
+      prev: prev.oxygen,
     },
   ];
 
@@ -91,12 +108,20 @@ function DashboardOverview() {
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Farm Overview</h1>
           <p className="text-sm text-muted-foreground">
-            Live sensor data updated every few seconds.
+            Live sensor data updated every 10 seconds.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> Live
-        </span>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => refetch()}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted"
+          >
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+          </button>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> Live
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
