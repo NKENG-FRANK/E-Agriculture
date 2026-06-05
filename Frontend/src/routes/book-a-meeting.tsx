@@ -23,7 +23,7 @@ function BookMeeting() {
     fullname: "",
     phonenumber: "",
     email: "",
-    farm_type: "crop",
+    farm_type: "Crop Farm",
     message: "",
   });
 
@@ -174,11 +174,11 @@ function BookMeeting() {
                   onChange={(e) => setFormData({ ...formData, farm_type: e.target.value })}
                   className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
                 >
-                  <option value="crop">Crop Farming</option>
-                  <option value="poultry">Poultry</option>
-                  <option value="aquaculture">Aquaculture (Ponds)</option>
-                  <option value="livestock">Livestock Farm</option>
-                  <option value="other">Mixed / Other</option>
+                  <option value="Crop Farm">Crop Farming</option>
+                  <option value="Poultry Farm">Poultry</option>
+                  <option value="Aquaculture (Ponds)">Aquaculture (Ponds)</option>
+                  <option value="Livestock Farm">Livestock Farm</option>
+                  <option value="Mixed Farm">Mixed / Other</option>
                 </select>
               </div>
 
