@@ -77,6 +77,19 @@ async def signup(user_data: UserSignup):
             }
         })
         
+        if not auth_user.user:
+            raise HTTPException(status_code=400, detail="Failed to create user in auth")
+
+        # IMPORTANT: Insert into public.users table so login role check works
+        supabase_db.table("users").insert({
+            "id": auth_user.user.id,
+            "email": user_data.email,
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "role": user_data.role,
+            "post": user_data.post
+        }).execute()
+        
         # After creation, generate tokens immediately
         access_token = create_access_token({
             "sub": auth_user.user.id,
@@ -112,10 +125,14 @@ async def login(user_data: UserLogin):
                 raise HTTPException(status_code=403, detail=f"Role mismatch: You are registered as {role}")
 
         # Authenticate with Supabase Auth
-        auth_response = supabase_auth.auth.sign_in_with_password({
-            "email": user_data.email,
-            "password": user_data.password
-        })
+        try:
+            auth_response = supabase_db.auth.sign_in_with_password({
+                "email": user_data.email,
+                "password": user_data.password
+            })
+        except Exception as auth_err:
+            print(f"DEBUG: Supabase Auth rejection: {str(auth_err)}")
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
         if auth_response is None or auth_response.user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -159,8 +176,8 @@ async def logout(credentials: HTTPAuthorizationCredentials = Security(bearer_sch
         token = credentials.credentials
 
         # Set the user's session then sign out — invalidates the token on Supabase side
-        supabase_auth.auth.set_session(token, "")
-        supabase_auth.auth.sign_out()
+        supabase_db.auth.set_session(token, "")
+        supabase_db.auth.sign_out()
 
         return {"message": "Logged out successfully."}
 
