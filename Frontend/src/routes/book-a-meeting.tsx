@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Logo } from "@/components/Logo";
 import { Send, CheckCircle2, Calendar, Mail, User, Phone, Sprout } from "lucide-react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/book-a-meeting")({
   head: () => ({
@@ -15,10 +17,29 @@ export const Route = createFileRoute("/book-a-meeting")({
 
 function BookMeeting() {
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    fullname: "",
+    phonenumber: "",
+    email: "",
+    farm_type: "crop",
+    message: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsLoading(true);
+
+    try {
+      await api.auth.bookConsultation(formData);
+      setSubmitted(true);
+      toast.success("Request sent successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send request. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (submitted) {
@@ -109,6 +130,8 @@ function BookMeeting() {
                       required
                       type="text"
                       placeholder="John Doe"
+                      value={formData.fullname}
+                      onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                       className="h-11 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none focus:border-primary"
                     />
                   </div>
@@ -121,6 +144,8 @@ function BookMeeting() {
                       required
                       type="tel"
                       placeholder="+1 (555) 000-0000"
+                      value={formData.phonenumber}
+                      onChange={(e) => setFormData({ ...formData, phonenumber: e.target.value })}
                       className="h-11 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none focus:border-primary"
                     />
                   </div>
@@ -135,6 +160,8 @@ function BookMeeting() {
                     required
                     type="email"
                     placeholder="john@farm.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="h-11 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none focus:border-primary"
                   />
                 </div>
@@ -142,12 +169,16 @@ function BookMeeting() {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Farm Type</label>
-                <select className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary">
-                  <option>Crop Farming</option>
-                  <option>Poultry</option>
-                  <option>Aquaculture (Ponds)</option>
-                  <option>Livestock Farm</option>
-                  <option>Mixed / Other</option>
+                <select 
+                  value={formData.farm_type}
+                  onChange={(e) => setFormData({ ...formData, farm_type: e.target.value })}
+                  className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
+                >
+                  <option value="crop">Crop Farming</option>
+                  <option value="poultry">Poultry</option>
+                  <option value="aquaculture">Aquaculture (Ponds)</option>
+                  <option value="livestock">Livestock Farm</option>
+                  <option value="other">Mixed / Other</option>
                 </select>
               </div>
 
@@ -156,15 +187,18 @@ function BookMeeting() {
                 <textarea
                   placeholder="Tell us about your farm and goals..."
                   rows={4}
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   className="w-full rounded-lg border border-input bg-background p-3 text-sm outline-none focus:border-primary"
                 />
               </div>
 
               <button
                 type="submit"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+                disabled={isLoading}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary font-semibold text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
               >
-                Send Request <Send className="h-4 w-4" />
+                {isLoading ? "Sending..." : "Send Request"} <Send className="h-4 w-4" />
               </button>
             </form>
           </div>

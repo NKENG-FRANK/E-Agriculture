@@ -12,6 +12,8 @@ import {
   Bar,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 type SensorReading = {
   time: string;
@@ -26,30 +28,47 @@ export const Route = createFileRoute("/dashboard/analytics")({
   component: Analytics,
 });
 
-const insights = [
-  {
-    icon: Droplets,
-    title: "Irrigation recommended",
-    desc: "Optimal window in 2 hours for Zone 3.",
-    tone: "bg-primary/10 text-primary",
-  },
-  {
-    icon: AlertTriangle,
-    title: "High risk of drought",
-    desc: "South Orchard moisture trending down 12% over 24h.",
-    tone: "bg-warning/20 text-warning-foreground",
-  },
-  {
-    icon: Sparkles,
-    title: "Yield boost",
-    desc: "Tomatoes (Zone 1) on track for +18% vs last cycle.",
-    tone: "bg-success/15 text-success",
-  },
-];
-
 function Analytics() {
-  const moisture: SensorReading[] = [];
-  const temp: SensorReading[] = [];
+  const { data: readings = [], isLoading } = useQuery({
+    queryKey: ["readings-long"],
+    queryFn: () => api.analytics.getReadings(50),
+    refetchInterval: 30000,
+  });
+
+  const { data: aiInsights } = useQuery({
+    queryKey: ["ai-insights"],
+    queryFn: () => api.ai.getInsights("default-farm"), // placeholder
+    enabled: true,
+  });
+
+  const chartData: SensorReading[] = readings.map((r: any) => ({
+    time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    moisture: r.soil_moisture,
+    temperature: r.temperature,
+    humidity: r.humidity,
+    oxygen: 7.2,
+  }));
+
+  const insights = [
+    {
+      icon: Droplets,
+      title: "Irrigation recommended",
+      desc: aiInsights?.irrigation || "Optimal window in 2 hours for Zone 3.",
+      tone: "bg-primary/10 text-primary",
+    },
+    {
+      icon: AlertTriangle,
+      title: "High risk of drought",
+      desc: aiInsights?.drought || "South Orchard moisture trending down 12% over 24h.",
+      tone: "bg-warning/20 text-warning-foreground",
+    },
+    {
+      icon: Sparkles,
+      title: "Yield boost",
+      desc: aiInsights?.yield || "Tomatoes (Zone 1) on track for +18% vs last cycle.",
+      tone: "bg-success/15 text-success",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -95,14 +114,18 @@ function Analytics() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <h3 className="mb-4 font-display text-lg font-bold">Soil moisture (24h)</h3>
-          {moisture.length === 0 ? (
+          <h3 className="mb-4 font-display text-lg font-bold">Soil moisture (history)</h3>
+          {isLoading ? (
+            <div className="flex h-[280px] items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : chartData.length === 0 ? (
             <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
               Analytics data is unavailable. Connect your backend to display charts.
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={moisture}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.91 0.015 140)" />
                 <XAxis dataKey="time" stroke="oklch(0.50 0.02 150)" fontSize={11} />
                 <YAxis stroke="oklch(0.50 0.02 150)" fontSize={11} />
@@ -126,13 +149,17 @@ function Analytics() {
         </div>
         <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
           <h3 className="mb-4 font-display text-lg font-bold">Temperature trend</h3>
-          {temp.length === 0 ? (
+          {isLoading ? (
+            <div className="flex h-[280px] items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : chartData.length === 0 ? (
             <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
               Analytics data is unavailable. Connect your backend to display charts.
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={temp}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.91 0.015 140)" />
                 <XAxis dataKey="time" stroke="oklch(0.50 0.02 150)" fontSize={11} />
                 <YAxis stroke="oklch(0.50 0.02 150)" fontSize={11} />

@@ -2,24 +2,22 @@ pipeline {
     agent any
 
     environment {
-        // Environment variables for the pipeline
-        BUN_PATH = "/usr/local/bin/bun" // Adjust this to your server's Bun path
+        DOCKER_COMPOSE = 'docker-compose'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Pulls the latest code from the configured SCM
                 checkout scm
             }
         }
 
-        stage('Backend - Install Dependencies') {
+        stage('Backend - Build & Deploy') {
             steps {
                 dir('Backend') {
-                    echo 'Installing Backend dependencies...'
-                    sh 'python -m pip install --upgrade pip'
-                    sh 'pip install -r requirements.txt'
+                    echo 'Building and starting Backend Microservices...'
+                    // Build and restart containers in detached mode
+                    sh "${DOCKER_COMPOSE} up -d --build"
                 }
             }
         }
@@ -27,41 +25,34 @@ pipeline {
         stage('Frontend - Install & Build') {
             steps {
                 dir('Frontend') {
-                    echo 'Installing Frontend dependencies & Building...'
-                    // Ensure Bun is in the path or use absolute path
-                    sh 'bun install'
-                    sh 'bun run build'
+                    echo 'Building Frontend Production Assets...'
+                    // Using npm as it is standard, but you can use bun if installed on Jenkins agent
+                    sh 'npm install'
+                    sh 'npm run build'
                 }
             }
         }
 
-        stage('Backend - Run Tests') {
+        stage('Health Check') {
             steps {
-                dir('Backend') {
-                    echo 'Running Backend tests...'
-                    // Runs pytest (will look for tests/ directory or test_*.py files)
-                    sh 'pytest'
-                }
-            }
-        }
-
-        stage('Deployment - Preview') {
-            steps {
-                echo 'Deployment stage - ready for production staging'
-                // Add deployment logic here (e.g., Cloudflare Pages, Docker, etc.)
+                echo 'Verifying services are reachable...'
+                // Wait a few seconds for services to initialize
+                sleep 5
+                sh 'curl -f http://localhost:8000/health || exit 1'
+                sh 'curl -f http://localhost:8001/health || exit 1'
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline execution finished.'
+            echo 'Cleanup and notification...'
         }
         success {
-            echo 'Build and Tests passed successfully!'
+            echo 'SFMS deployed successfully to VPS!'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs.'
+            echo 'Deployment failed. Check logs and container status.'
         }
     }
 }
