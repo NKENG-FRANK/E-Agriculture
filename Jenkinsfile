@@ -32,29 +32,17 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 dir('Backend/k8s') {
-                    echo 'Applying Kubernetes manifests...'
-                    // Create namespace if not exists
-                    sh 'sudo kubectl apply -f namespace.yaml'
+                    echo 'Verifying K3s Connection...'
+                    sh 'sudo kubectl cluster-info'
                     
-                    // Apply ConfigMaps and Infrastructure
+                    echo 'Applying Kubernetes manifests...'
+                    sh 'sudo kubectl apply -f namespace.yaml'
                     sh 'sudo kubectl apply -f configmap.yaml'
                     sh 'sudo kubectl apply -f redis-deployment.yaml'
-                    
-                    // Apply Microservices
                     sh 'sudo kubectl apply -f analytics-deployment.yaml'
                     sh 'sudo kubectl apply -f user-management-deployment.yaml'
                     sh 'sudo kubectl apply -f ai-insights-deployment.yaml'
                     sh 'sudo kubectl apply -f alert-system-deployment.yaml'
-                }
-            }
-        }
-
-        stage('Frontend - Build') {
-            steps {
-                dir('Frontend') {
-                    echo 'Building Frontend Production Assets...'
-                    sh 'npm install'
-                    sh 'npm run build'
                 }
             }
         }
