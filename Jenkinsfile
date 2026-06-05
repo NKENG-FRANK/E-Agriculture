@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_COMPOSE = 'docker-compose'
+        KUBECONFIG = '/etc/rancher/k3s/k3s.yaml'
     }
 
     stages {
@@ -12,47 +12,72 @@ pipeline {
             }
         }
 
-        stage('Backend - Build & Deploy') {
+        stage('Build Docker Images') {
             steps {
                 dir('Backend') {
-                    echo 'Building and starting Backend Microservices...'
-                    // Build and restart containers in detached mode
-                    sh "${DOCKER_COMPOSE} up -d --build"
+                    echo 'Building Microservices Images...'
+                    sh 'docker build -t e-agri/analytics-service:latest ./analytics_service'
+                    sh 'docker build -t e-agri/user-management-service:latest ./user_mannagement_service'
+                    sh 'docker build -t e-agri/ai-insights-service:latest ./ai_insights_service'
+                    sh 'docker build -t e-agri/alert-service:latest ./alert_service'
                 }
             }
         }
 
-        stage('Frontend - Install & Build') {
+        stage('Import Images to K3s') {
+            steps {
+                echo 'Importing images into K3s container runtime...'
+                sh 'sudo k3s ctr images import <(docker save e-agri/analytics-service:latest)'
+                sh 'sudo k3s ctr images import <(docker save e-agri/user-management-service:latest)'
+                sh 'sudo k3s ctr images import <(docker save e-agri/ai-insights-service:latest)'
+                sh 'sudo k3s ctr images import <(docker save e-agri/alert-service:latest)'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                dir('Backend/k8s') {
+                    echo 'Applying Kubernetes manifests...'
+                    // Create namespace if not exists
+                    sh 'sudo kubectl apply -f namespace.yaml'
+                    
+                    // Apply ConfigMaps and Infrastructure
+                    sh 'sudo kubectl apply -f configmap.yaml'
+                    sh 'sudo kubectl apply -f redis-deployment.yaml'
+                    
+                    // Apply Microservices
+                    sh 'sudo kubectl apply -f analytics-deployment.yaml'
+                    sh 'sudo kubectl apply -f user-management-deployment.yaml'
+                    sh 'sudo kubectl apply -f ai-insights-deployment.yaml'
+                    sh 'sudo kubectl apply -f alert-system-deployment.yaml'
+                }
+            }
+        }
+
+        stage('Frontend - Build') {
             steps {
                 dir('Frontend') {
                     echo 'Building Frontend Production Assets...'
-                    // Using npm as it is standard, but you can use bun if installed on Jenkins agent
                     sh 'npm install'
                     sh 'npm run build'
                 }
             }
         }
 
-        stage('Health Check') {
+        stage('Verify Deployment') {
             steps {
-                echo 'Verifying services are reachable...'
-                // Wait a few seconds for services to initialize
-                sleep 5
-                sh 'curl -f http://localhost:8000/health || exit 1'
-                sh 'curl -f http://localhost:8001/health || exit 1'
+                echo 'Checking Pod Status...'
+                sh 'sudo kubectl get pods -n e-agri'
             }
         }
     }
 
     post {
-        always {
-            echo 'Cleanup and notification...'
-        }
         success {
-            echo 'SFMS deployed successfully to VPS!'
+            echo 'SFMS successfully launched on Kubernetes!'
         }
         failure {
-            echo 'Deployment failed. Check logs and container status.'
+            echo 'Kubernetes deployment failed. Check K3s logs.'
         }
     }
 }
