@@ -5,6 +5,8 @@ metadata:
   namespace: e-agri
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
+    # Middleware to strip the prefix so /auth-docs maps to /docs internally
+    traefik.ingress.kubernetes.io/router.middlewares: e-agri-stripprefix@kubernetescrd
 spec:
   rules:
   - http:
@@ -16,7 +18,21 @@ spec:
             name: user-management-service
             port:
               number: 8001
+      - path: /auth-docs
+        pathType: Prefix
+        backend:
+          service:
+            name: user-management-service
+            port:
+              number: 8001
       - path: /analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 8000
+      - path: /analytics-docs
         pathType: Prefix
         backend:
           service:
@@ -44,6 +60,13 @@ spec:
             name: ai-insights-service
             port:
               number: 8002
+      - path: /ai-docs
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-insights-service
+            port:
+              number: 8002
       - path: /alerts
         pathType: Prefix
         backend:
@@ -51,3 +74,23 @@ spec:
             name: alert-api-service
             port:
               number: 8003
+      - path: /alert-docs
+        pathType: Prefix
+        backend:
+          service:
+            name: alert-api-service
+            port:
+              number: 8003
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+  namespace: e-agri
+spec:
+  stripPrefix:
+    prefixes:
+      - /auth-docs
+      - /analytics-docs
+      - /ai-docs
+      - /alert-docs
