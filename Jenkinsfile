@@ -6,12 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 dir('Backend') {
@@ -27,39 +21,28 @@ pipeline {
         stage('Import Images to K3s') {
             steps {
                 echo 'Importing images into K3s container runtime...'
-                sh 'sudo k3s ctr images import <(docker save e-agri/analytics-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/user-management-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/ai-insights-service:latest)'
-                sh 'sudo k3s ctr images import <(docker save e-agri/alert-service:latest)'
+                // Using pipe instead of process substitution for shell compatibility
+                sh 'docker save e-agri/analytics-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/user-management-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/ai-insights-service:latest | sudo k3s ctr images import -'
+                sh 'docker save e-agri/alert-service:latest | sudo k3s ctr images import -'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
                 dir('Backend/k8s') {
-                    echo 'Applying Kubernetes manifests...'
-                    // Create namespace if not exists
-                    sh 'sudo kubectl apply -f namespace.yaml'
+                    echo 'Verifying K3s Connection...'
+                    sh 'sudo kubectl cluster-info'
                     
-                    // Apply ConfigMaps and Infrastructure
+                    echo 'Applying Kubernetes manifests...'
+                    sh 'sudo kubectl apply -f namespace.yaml'
                     sh 'sudo kubectl apply -f configmap.yaml'
                     sh 'sudo kubectl apply -f redis-deployment.yaml'
-                    
-                    // Apply Microservices
                     sh 'sudo kubectl apply -f analytics-deployment.yaml'
                     sh 'sudo kubectl apply -f user-management-deployment.yaml'
                     sh 'sudo kubectl apply -f ai-insights-deployment.yaml'
                     sh 'sudo kubectl apply -f alert-system-deployment.yaml'
-                }
-            }
-        }
-
-        stage('Frontend - Build') {
-            steps {
-                dir('Frontend') {
-                    echo 'Building Frontend Production Assets...'
-                    sh 'npm install'
-                    sh 'npm run build'
                 }
             }
         }
