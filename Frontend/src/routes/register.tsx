@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Logo } from "@/components/Logo";
+import { Logo } from "../components/Logo";
 import { UserPlus } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { api } from "@/lib/api";
+import { cn } from "../lib/utils";
+import { api } from "../lib/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/register")({

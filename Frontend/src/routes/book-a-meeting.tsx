@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { Logo } from "../components/Logo";
 import { Send, CheckCircle2, Calendar, Mail, User, Phone, Sprout } from "lucide-react";
-import { api } from "@/lib/api";
+import { api } from "../lib/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/book-a-meeting")({
