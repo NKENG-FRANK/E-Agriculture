@@ -18,7 +18,14 @@ bearer_scheme = HTTPBearer()
 # 2. No email confirmation needed (admin.create_user)
 # 3. Full DB access bypassing RLS
 # 4. Simpler — one client, one key, no confusion
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+from supabase import create_client, ClientOptions
+
+# This disables the realtime socket entirely — set_auth never gets called
+supabase = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_SERVICE_ROLE_KEY,
+    options=ClientOptions(realtime_client_options={"auto_reconnect": False})
+)
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -73,7 +80,10 @@ async def signup(user_data: UserSignup):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     try:
-        # 2. Create in auth.users — auto-confirmed, no email needed
+        # 2. Create in auth.users
+        # The Supabase Trigger (handle_new_user) will automatically:
+        # - Insert into public.users
+        # - Insert into public.owners OR public.sub_users based on role
         auth_user = supabase.auth.admin.create_user({
             "email": user_data.email,
             "password": user_data.password,
@@ -92,36 +102,7 @@ async def signup(user_data: UserSignup):
 
         uid = auth_user.user.id
 
-        # 3. Insert into public.users manually
-        # (trigger disabled — we control the logic here)
-        supabase.table("users").insert({
-            "id": uid,
-            "email": user_data.email,
-            "first_name": user_data.first_name,
-            "last_name": user_data.last_name,
-            "role": user_data.role,
-            "post": user_data.post,
-            "phone": user_data.phone,
-        }).execute()
-
-        # 4. Route to role-specific table
-        if user_data.role == "owner":
-            supabase.table("owners").insert({
-                "user_id": uid,
-                "email": user_data.email,
-                "first_name": user_data.first_name,
-                "last_name": user_data.last_name,
-                "phone": user_data.phone,
-            }).execute()
-
-        elif user_data.role == "sub_user":
-            supabase.table("sub_users").insert({
-                "user_id": uid,
-                "email": user_data.email,
-                "full_name": f"{user_data.first_name or ''} {user_data.last_name or ''}".strip(),
-            }).execute()
-
-        # 5. Issue tokens immediately
+        # 3. Issue tokens immediately
         access_token = create_access_token({
             "sub": uid,
             "email": user_data.email,
