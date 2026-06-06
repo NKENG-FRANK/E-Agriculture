@@ -1,8 +1,12 @@
 const VPS_IP = "144.91.89.100";
-const ANALYTICS_URL = `http://${VPS_IP}`;
-const USER_MGMT_URL = `http://${VPS_IP}/api/v1`;
-const AI_INSIGHTS_URL = `http://${VPS_IP}`;
-const ALERTS_URL = `http://${VPS_IP}`;
+
+const isProduction = import.meta.env.PROD;
+const BASE_URL = isProduction ? "/api-proxy" : `http://${VPS_IP}`;
+
+const ANALYTICS_URL = BASE_URL;
+const USER_MGMT_URL = `${BASE_URL}/api/v1`;
+const AI_INSIGHTS_URL = BASE_URL;
+const ALERTS_URL = BASE_URL;
 
 export const API_URLS = {
   ANALYTICS: ANALYTICS_URL,
