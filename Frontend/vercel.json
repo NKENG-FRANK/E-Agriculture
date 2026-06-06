@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/user-mgmt/:path*",
+      "destination": "http://144.91.89.100:8001/api/v1/:path*"
+    },
+    {
+      "source": "/api/analytics/:path*",
+      "destination": "http://144.91.89.100:8000/:path*"
+    },
+    {
+      "source": "/api/insights/:path*",
+      "destination": "http://144.91.89.100:8002/:path*"
+    },
+    {
+      "source": "/api/alerts/:path*",
+      "destination": "http://144.91.89.100:8003/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
