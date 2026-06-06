@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearch } from "@tanstack/react-router";
+import { Link, useLocation, useSearch, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -14,9 +14,16 @@ import {
   LogOut,
   MessageSquare,
   LandPlot,
+  ChevronRight,
+  Waves,
+  Zap,
+  Menu,
+  X,
+  AlertCircle
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
