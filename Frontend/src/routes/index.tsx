@@ -1,6 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sprout, Activity, Brain, Droplets, ArrowRight, CheckCircle2 } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import { 
+  Sprout, 
+  ArrowRight, 
+  ShieldCheck, 
+  Zap, 
+  BarChart3, 
+  Users, 
+  CheckCircle2,
+  Menu,
+  X,
+  Smartphone,
+  Cloud,
+  Microscope,
+  Activity,
+  Brain,
+  Droplets
+} from "lucide-react";
+import { Logo } from "../components/Logo";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
