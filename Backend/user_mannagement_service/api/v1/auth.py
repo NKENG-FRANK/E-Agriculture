@@ -112,32 +112,26 @@ async def signup(user_data: UserSignup):
 @router.post("/login")
 async def login(user_data: UserLogin):
     try:
-        # 1. Use the anon client for signing in to get a proper session
-        try:
-            auth_response = supabase_auth.auth.sign_in_with_password({
-                "email": user_data.email,
-                "password": user_data.password
-            })
-        except Exception as auth_err:
-            print(f"DEBUG: Supabase Auth rejection: {str(auth_err)}")
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+        # Temporary: using service role client to avoid set_auth bug
+        # TODO: switch back to supabase_auth after fixing realtime issue
+        auth_response = supabase_db.auth.sign_in_with_password({
+            "email": user_data.email,
+            "password": user_data.password
+        })
 
         if auth_response is None or auth_response.user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         user = auth_response.user
 
-        # 2. Check role in public.users using the privileged client
         user_record = supabase_db.table("users").select("role").eq("id", user.id).execute()
-        
+
         if not user_record.data:
-            # Fallback if signup record is missing
-            print(f"DEBUG: User {user.id} not found in public.users table")
             role = user_data.role.value
         else:
             role = user_record.data[0].get("role")
             if role != user_data.role.value:
-                raise HTTPException(status_code=403, detail=f"Role mismatch: Access denied")
+                raise HTTPException(status_code=403, detail="Role mismatch — access denied")
 
         expires = timedelta(days=30) if user_data.remember_me else None
 
@@ -157,9 +151,7 @@ async def login(user_data: UserLogin):
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
         print("LOGIN ERROR:", str(e))
-        print(traceback.format_exc())
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
 bearer_scheme = HTTPBearer()
