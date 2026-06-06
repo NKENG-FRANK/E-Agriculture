@@ -18,7 +18,14 @@ bearer_scheme = HTTPBearer()
 # 2. No email confirmation needed (admin.create_user)
 # 3. Full DB access bypassing RLS
 # 4. Simpler — one client, one key, no confusion
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+from supabase import create_client, ClientOptions
+
+# This disables the realtime socket entirely — set_auth never gets called
+supabase = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_SERVICE_ROLE_KEY,
+    options=ClientOptions(realtime_client_options={"auto_reconnect": False})
+)
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
