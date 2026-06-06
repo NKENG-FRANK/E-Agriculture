@@ -43,6 +43,9 @@ pipeline {
                     sh 'sudo kubectl apply -f user-management-deployment.yaml'
                     sh 'sudo kubectl apply -f ai-insights-deployment.yaml'
                     sh 'sudo kubectl apply -f alert-system-deployment.yaml'
+
+                    echo 'Force restarting deployments to pick up new images and secrets...'
+                    sh 'sudo kubectl rollout restart deployment -n e-agri'
                 }
             }
         }
