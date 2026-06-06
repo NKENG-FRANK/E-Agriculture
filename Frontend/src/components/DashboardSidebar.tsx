@@ -45,10 +45,10 @@ export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: ()
   const search = useSearch({ from: "/dashboard" }) as { role?: string };
 
   // Mock role check - in a real app, this would come from an auth hook/context
-  const userRole: "admin" | "owner" | "sub-user" = pathname.includes("/admin") 
+  const userRole: "admin" | "owner" | "sub_user" = pathname.includes("/admin") 
     ? "admin" 
-    : search.role === "sub-user"
-      ? "sub-user" 
+    : search.role === "sub_user"
+      ? "sub_user" 
       : "owner";
 
   // Mock assigned sections for sub-user
@@ -74,10 +74,10 @@ export function DashboardSidebar({ open, onClose }: { open: boolean; onClose: ()
     }
     
     // Team management only for owners (and admins, though admins won't reach here)
-    if (item.to === "/dashboard/settings") return userRole !== "sub-user";
+    if (item.to === "/dashboard/settings") return userRole !== "sub_user";
 
     // Sub-users only see their assigned sections
-    if (userRole === "sub-user") {
+    if (userRole === "sub_user") {
       const sectionRoutes = ["/dashboard/crops", "/dashboard/poultry", "/dashboard/aquaculture"];
       if (sectionRoutes.includes(item.to)) {
         return assignedSections.includes(item.to);

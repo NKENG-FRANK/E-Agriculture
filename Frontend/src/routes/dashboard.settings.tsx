@@ -39,8 +39,8 @@ function TeamManagement() {
   const userRole = search.role;
 
   // Redirect sub-users away from Team Management
-  if (userRole === "sub-user") {
-    return <Navigate to="/dashboard" search={{ role: "sub-user" }} />;
+  if (userRole === "sub_user") {
+    return <Navigate to="/dashboard" search={{ role: "sub_user" }} />;
   }
 
   const [users, setUsers] = useState<SubUser[]>([
