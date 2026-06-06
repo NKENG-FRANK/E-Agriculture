@@ -20,21 +20,43 @@ async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("sfms_token");
   
   const headers = new Headers(options?.headers);
-  if (token) {
+  
+  // Don't send Authorization header for auth routes
+  const isAuthRoute = url.includes("/auth/login") || 
+                     url.includes("/auth/signup") || 
+                     url.includes("/auth/book-consultation");
+
+  if (token && !isAuthRoute) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+  
   if (options?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(url, { ...options, headers });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "An error occurred" }));
-    throw new Error(error.detail || response.statusText);
-  }
+  try {
+    const response = await fetch(url, { ...options, headers });
+    
+    if (!response.ok) {
+      let errorMessage = response.statusText;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorData.message || response.statusText;
+      } catch (e) {
+        // Not a JSON error, maybe HTML from proxy
+        console.error("Non-JSON error response:", response.status);
+      }
+      
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      throw error;
+    }
 
-  return response.json();
+    return response.json();
+  } catch (error) {
+    console.error(`API Error (${url}):`, error);
+    throw error;
+  }
 }
 
 export const api = {

@@ -38,10 +38,10 @@ function RegisterPage() {
 
     try {
       const response = await api.auth.signup({
-        email,
+        email: email.trim(),
         password,
-        first_name: firstName,
-        last_name: lastName,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         role: role,
         post: role === "owner" ? "Owner" : "Staff",
       });
