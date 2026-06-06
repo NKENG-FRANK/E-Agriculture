@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Droplets, Power, Sprout, Fan } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 export const Route = createFileRoute("/dashboard/control")({
   head: () => ({ meta: [{ title: "Control Panel — SFMS" }] }),

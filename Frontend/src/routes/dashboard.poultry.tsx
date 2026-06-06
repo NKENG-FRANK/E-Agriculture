@@ -9,7 +9,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 type ZoneCategory = "crop" | "livestock" | "poultry" | "aquaculture";
 

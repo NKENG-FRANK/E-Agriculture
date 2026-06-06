@@ -21,7 +21,7 @@ import {
   UserMinus,
   XCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 export const Route = createFileRoute("/dashboard/admin")({
   validateSearch: (search: Record<string, unknown>): { tab?: string } => {

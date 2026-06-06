@@ -12,7 +12,7 @@ import {
   ChevronRight,
   LayoutGrid
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 export const Route = createFileRoute("/dashboard/settings")({
   validateSearch: (search: Record<string, unknown>): { role?: string } => {

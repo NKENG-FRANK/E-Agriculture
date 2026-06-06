@@ -22,7 +22,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Logo } from "./Logo";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { useState } from "react";
 
 const navItems = [
