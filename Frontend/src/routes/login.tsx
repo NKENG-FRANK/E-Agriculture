@@ -28,12 +28,8 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Clear old data first
-      localStorage.removeItem("sfms_token");
-      localStorage.removeItem("sfms_role");
-
       const response = await api.auth.login({
-        email: email.trim(),
+        email,
         password,
         role,
         remember_me: true, // simplified for now
@@ -49,7 +45,7 @@ function LoginPage() {
       if (response.role === "admin") {
         navigate({ to: "/dashboard/admin" });
       } else if (response.role === "sub_user") {
-        navigate({ to: "/dashboard", search: { role: "sub_user" } });
+        navigate({ to: "/dashboard", search: { role: "sub-user" } });
       } else {
         navigate({ to: "/dashboard" });
       }

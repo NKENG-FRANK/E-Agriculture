@@ -2,12 +2,6 @@
   command = "npm install && npm run build"
   publish = "dist"
 
-[[redirects]]
-  from = "/api-proxy/*"
-  to = "http://144.91.89.100/:splat"
-  status = 200
-  force = true
-
 # Single Page Application (SPA) redirect rule
 # This ensures that TanStack Router paths work correctly on page refresh
 [[redirects]]
@@ -17,3 +11,4 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--version"

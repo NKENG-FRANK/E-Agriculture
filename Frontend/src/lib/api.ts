@@ -1,12 +1,8 @@
 const VPS_IP = "144.91.89.100";
-
-const isProduction = import.meta.env.PROD;
-const BASE_URL = isProduction ? "/api-proxy" : `http://${VPS_IP}`;
-
-const ANALYTICS_URL = BASE_URL;
-const USER_MGMT_URL = `${BASE_URL}/api/v1`;
-const AI_INSIGHTS_URL = BASE_URL;
-const ALERTS_URL = BASE_URL;
+const ANALYTICS_URL = `http://${VPS_IP}:8000`;
+const USER_MGMT_URL = `http://${VPS_IP}:8001/api/v1`;
+const AI_INSIGHTS_URL = `http://${VPS_IP}:8002`;
+const ALERTS_URL = `http://${VPS_IP}:8003`;
 
 export const API_URLS = {
   ANALYTICS: ANALYTICS_URL,
@@ -20,43 +16,21 @@ async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("sfms_token");
   
   const headers = new Headers(options?.headers);
-  
-  // Don't send Authorization header for auth routes
-  const isAuthRoute = url.includes("/auth/login") || 
-                     url.includes("/auth/signup") || 
-                     url.includes("/auth/book-consultation");
-
-  if (token && !isAuthRoute) {
+  if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  
   if (options?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  try {
-    const response = await fetch(url, { ...options, headers });
-    
-    if (!response.ok) {
-      let errorMessage = response.statusText;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorData.message || response.statusText;
-      } catch (e) {
-        // Not a JSON error, maybe HTML from proxy
-        console.error("Non-JSON error response:", response.status);
-      }
-      
-      const error = new Error(errorMessage);
-      (error as any).status = response.status;
-      throw error;
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error(`API Error (${url}):`, error);
-    throw error;
+  const response = await fetch(url, { ...options, headers });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "An error occurred" }));
+    throw new Error(error.detail || response.statusText);
   }
+
+  return response.json();
 }
 
 export const api = {
