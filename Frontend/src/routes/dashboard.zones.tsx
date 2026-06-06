@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Droplets, Thermometer, Wind, ArrowRight, Sprout, Bird, Fish, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 type ZoneCategory = "crop" | "livestock" | "poultry" | "aquaculture";
 
