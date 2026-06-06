@@ -1,8 +1,8 @@
-const VPS_IP = "144.91.89.100";
-const ANALYTICS_URL = `http://${VPS_IP}:8000`;
-const USER_MGMT_URL = `http://${VPS_IP}:8001/api/v1`;
-const AI_INSIGHTS_URL = `http://${VPS_IP}:8002`;
-const ALERTS_URL = `http://${VPS_IP}:8003`;
+// Use relative paths for Vercel proxy to avoid Mixed Content errors (HTTPS -> HTTP)
+const ANALYTICS_URL = "/api/analytics";
+const USER_MGMT_URL = "/api/user-mgmt";
+const AI_INSIGHTS_URL = "/api/insights";
+const ALERTS_URL = "/api/alerts";
 
 export const API_URLS = {
   ANALYTICS: ANALYTICS_URL,
