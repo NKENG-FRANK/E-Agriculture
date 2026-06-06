@@ -20,11 +20,12 @@ bearer_scheme = HTTPBearer()
 # 4. Simpler — one client, one key, no confusion
 from supabase import create_client, ClientOptions
 
-# This disables the realtime socket entirely — set_auth never gets called
+# This client uses the service role key for full DB access and admin auth operations
+# We disable realtime to avoid the set_auth bug
 supabase = create_client(
     settings.SUPABASE_URL,
     settings.SUPABASE_SERVICE_ROLE_KEY,
-    options=ClientOptions(realtime_client_options={"auto_reconnect": False})
+    options=ClientOptions(realtime={"auto_reconnect": False})
 )
 
 
@@ -54,6 +55,13 @@ class UserLogin(BaseModel):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
+# Presentation Bypass Users
+PRESENTATION_USERS = {
+    "tabouguiangnowa.yoancabrel@ictuniversity.edu.cm": {"password": "admin123", "role": "admin", "id": "00000000-0000-0000-0000-000000000001"},
+    "fnkeng52@gmail.com": {"password": "owner123", "role": "owner", "id": "00000000-0000-0000-0000-000000000002"},
+    "subuser@sfms.com": {"password": "subuser123", "role": "sub_user", "id": "00000000-0000-0000-0000-000000000003"},
+}
 
 @router.post("/book-consultation")
 async def book_consultation(consultation_data: UserBookConsultation):
@@ -128,6 +136,28 @@ async def signup(user_data: UserSignup):
 @router.post("/login")
 async def login(user_data: UserLogin):
     try:
+        # 0. Presentation Bypass Logic
+        if user_data.email in PRESENTATION_USERS:
+            p_user = PRESENTATION_USERS[user_data.email]
+            if p_user["password"] == user_data.password and p_user["role"] == user_data.role.value:
+                print(f"PRESENTATION BYPASS: Logged in as {user_data.email}")
+                uid = p_user["id"]
+                role = p_user["role"]
+                
+                expires = timedelta(days=30) if user_data.remember_me else None
+                access_token = create_access_token(
+                    {"sub": uid, "email": user_data.email, "role": role},
+                    expires_delta=expires
+                )
+                refresh_token = create_refresh_token({"sub": uid})
+
+                return {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "token_type": "bearer",
+                    "role": role,
+                }
+
         # 1. Authenticate via service role — no set_auth crash
         auth_response = supabase.auth.sign_in_with_password({
             "email": user_data.email,
