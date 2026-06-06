@@ -1,26 +1,33 @@
 from datetime import timedelta
-
-from fastapi import APIRouter, HTTPException,Header,Security
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, EmailStr
 from typing import Optional
+from enum import Enum
 from core.security import create_access_token, create_refresh_token
 from core.config import settings
 from supabase import create_client
-from models.farm import FarmType
 from models.user import UserBookConsultation
-from enum import Enum
-
-
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+bearer_scheme = HTTPBearer()
+
+# ── Single client — service role for ALL operations ───────────────────────────
+# Why service role only:
+# 1. No set_auth crash (realtime socket not used)
+# 2. No email confirmation needed (admin.create_user)
+# 3. Full DB access bypassing RLS
+# 4. Simpler — one client, one key, no confusion
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 
-# For auth operations (sign in, sign up)
-supabase_auth = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+# ── Schemas ───────────────────────────────────────────────────────────────────
 
-# For DB operations (querying public.users)
-supabase_db = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+class UserRole(str, Enum):
+    admin = "admin"
+    owner = "owner"
+    sub_user = "sub_user"
+
 
 class UserSignup(BaseModel):
     email: EmailStr
@@ -28,12 +35,9 @@ class UserSignup(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     post: Optional[str] = "staff"
-    role: Optional[str] = "sub_user"  # Default role for new signups
+    role: Optional[str] = "sub_user"
+    phone: Optional[str] = None
 
-class UserRole(str, Enum):
-    admin = "admin"
-    owner = "owner"
-    sub_user = "sub_user"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -42,11 +46,12 @@ class UserLogin(BaseModel):
     remember_me: bool = False
 
 
+# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/book-consultation")
 async def book_consultation(consultation_data: UserBookConsultation):
     try:
-        supabase_db.table("consultations").insert({  # ← supabase_db
+        supabase.table("consultations").insert({
             "fullname": consultation_data.fullname,
             "phonenumber": str(consultation_data.phonenumber),
             "email": consultation_data.email,
@@ -60,13 +65,16 @@ async def book_consultation(consultation_data: UserBookConsultation):
 
 @router.post("/signup")
 async def signup(user_data: UserSignup):
-    # Check if user exists in public.users
-    existing = supabase_db.table("users").select("*").eq("email", user_data.email).execute()
+    # 1. Check duplicate email in public.users
+    existing = supabase.table("users").select("id").eq(
+        "email", user_data.email
+    ).execute()
     if existing.data:
         raise HTTPException(status_code=400, detail="Email already registered")
+
     try:
-        # 1. Create the user via Admin API (auto-confirms email)
-        auth_user = supabase_db.auth.admin.create_user({
+        # 2. Create in auth.users — auto-confirmed, no email needed
+        auth_user = supabase.auth.admin.create_user({
             "email": user_data.email,
             "password": user_data.password,
             "email_confirm": True,
@@ -74,31 +82,63 @@ async def signup(user_data: UserSignup):
                 "first_name": user_data.first_name,
                 "last_name": user_data.last_name,
                 "post": user_data.post,
-                "role": user_data.role
+                "role": user_data.role,
+                "phone": user_data.phone,
             }
         })
-        
+
         if not auth_user.user:
-            raise HTTPException(status_code=400, detail="Failed to create user in auth")
+            raise HTTPException(status_code=400, detail="Failed to create user")
 
-        # NOTE: We rely on the Supabase PostgreSQL trigger to insert into public.users
-        # If the trigger is not set up, uncomment the line below:
-        # supabase_db.table("users").insert({"id": auth_user.user.id, "email": user_data.email, ...}).execute()
+        uid = auth_user.user.id
 
-        # 2. Generate SFMS tokens immediately
-        access_token = create_access_token({
-            "sub": auth_user.user.id,
+        # 3. Insert into public.users manually
+        # (trigger disabled — we control the logic here)
+        supabase.table("users").insert({
+            "id": uid,
             "email": user_data.email,
-            "role": user_data.role
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "role": user_data.role,
+            "post": user_data.post,
+            "phone": user_data.phone,
+        }).execute()
+
+        # 4. Route to role-specific table
+        if user_data.role == "owner":
+            supabase.table("owners").insert({
+                "user_id": uid,
+                "email": user_data.email,
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "phone": user_data.phone,
+            }).execute()
+
+        elif user_data.role == "sub_user":
+            supabase.table("sub_users").insert({
+                "user_id": uid,
+                "email": user_data.email,
+                "full_name": f"{user_data.first_name or ''} {user_data.last_name or ''}".strip(),
+            }).execute()
+
+        # 5. Issue tokens immediately
+        access_token = create_access_token({
+            "sub": uid,
+            "email": user_data.email,
+            "role": user_data.role,
         })
-        refresh_token = create_refresh_token({"sub": auth_user.user.id})
-        
+        refresh_token = create_refresh_token({"sub": uid})
+
         return {
             "message": "Account created successfully.",
-            "access_token": access_token, 
-            "refresh_token": refresh_token, 
-            "token_type": "bearer"
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "role": user_data.role,
         }
+
+    except HTTPException:
+        raise
     except Exception as e:
         print("SIGNUP ERROR:", str(e))
         raise HTTPException(status_code=400, detail=str(e))
@@ -107,47 +147,41 @@ async def signup(user_data: UserSignup):
 @router.post("/login")
 async def login(user_data: UserLogin):
     try:
-        # 1. Use supabase_db (service role) to avoid the set_auth bug
-        # and ensure we can read the user session correctly
-        try:
-            auth_response = supabase_db.auth.sign_in_with_password({
-                "email": user_data.email,
-                "password": user_data.password
-            })
-        except Exception as auth_err:
-            error_str = str(auth_err)
-            print(f"SUPABASE AUTH REJECTION: {error_str}")
-            
-            # Catch the specific 'set_auth' bug but allow login if user exists
-            if "'NoneType' object has no attribute 'set_auth'" in error_str:
-                print("Ignoring set_auth bug, continuing with user record...")
-                # We need to manually fetch the user if auth_response crashed but succeeded
-                user_search = supabase_db.auth.admin.list_users()
-                user = next((u for u in user_search if u.email == user_data.email), None)
-                if not user:
-                    raise HTTPException(status_code=401, detail="Invalid credentials")
-            else:
-                raise HTTPException(status_code=401, detail="Invalid email or password")
+        # 1. Authenticate via service role — no set_auth crash
+        auth_response = supabase.auth.sign_in_with_password({
+            "email": user_data.email,
+            "password": user_data.password,
+        })
 
-        if auth_response and auth_response.user:
-            user = auth_response.user
-        elif not user:
+        if not auth_response or not auth_response.user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        # 2. Verify Role
-        user_record = supabase_db.table("users").select("role").eq("id", user.id).execute()
-        
-        if not user_record.data:
-            role = user_data.role.value
-        else:
-            role = user_record.data[0].get("role")
-            if role != user_data.role.value:
-                raise HTTPException(status_code=403, detail="Role mismatch — access denied")
+        user = auth_response.user
 
-        # 3. Create tokens
+        # 2. Fetch role from public.users
+        user_record = supabase.table("users").select("role").eq(
+            "id", user.id
+        ).execute()
+
+        if not user_record.data:
+            raise HTTPException(
+                status_code=404,
+                detail="User profile not found. Contact your administrator."
+            )
+
+        db_role = user_record.data[0].get("role")
+
+        # 3. Enforce role match
+        if db_role != user_data.role.value:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Role mismatch — your account role is '{db_role}'"
+            )
+
+        # 4. Issue tokens
         expires = timedelta(days=30) if user_data.remember_me else None
         access_token = create_access_token(
-            {"sub": user.id, "email": user.email, "role": role},
+            {"sub": user.id, "email": user.email, "role": db_role},
             expires_delta=expires
         )
         refresh_token = create_refresh_token({"sub": user.id})
@@ -156,29 +190,25 @@ async def login(user_data: UserLogin):
             "access_token": access_token,
             "refresh_token": refresh_token,
             "token_type": "bearer",
-            "role": role,
+            "role": db_role,
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        print(f"LOGIN CRITICAL ERROR: {type(e).__name__}: {str(e)}")
-        raise HTTPException(status_code=401, detail="Authentication failed")
-    
-bearer_scheme = HTTPBearer()
+        print("LOGIN ERROR:", str(e))
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
 
 @router.post("/logout")
-async def logout(credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)):
+async def logout(
+    credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)
+):
     try:
-        # Extract token from "Bearer <token>"
         token = credentials.credentials
-
-        # Set the user's session then sign out — invalidates the token on Supabase side
-        supabase_db.auth.set_session(token, "")
-        supabase_db.auth.sign_out()
-
+        # Admin sign out — invalidates the token server-side correctly
+        supabase.auth.admin.sign_out(token)
         return {"message": "Logged out successfully."}
-
     except Exception as e:
         print("LOGOUT ERROR:", str(e))
         raise HTTPException(status_code=400, detail="Logout failed")
