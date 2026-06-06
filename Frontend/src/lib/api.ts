@@ -1,8 +1,8 @@
-// Use relative paths for Vercel proxy to avoid Mixed Content errors (HTTPS -> HTTP)
-const ANALYTICS_URL = "/api";
-const USER_MGMT_URL = "/api/v1/auth";
-const AI_INSIGHTS_URL = "/api";
-const ALERTS_URL = "/api";
+const VPS_IP = "144.91.89.100";
+const ANALYTICS_URL = `http://${VPS_IP}:8000`;
+const USER_MGMT_URL = `http://${VPS_IP}:8001/api/v1`;
+const AI_INSIGHTS_URL = `http://${VPS_IP}:8002`;
+const ALERTS_URL = `http://${VPS_IP}:8003`;
 
 export const API_URLS = {
   ANALYTICS: ANALYTICS_URL,
@@ -36,22 +36,22 @@ async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
 export const api = {
   auth: {
     login: (data: any) => 
-      fetcher<any>(`${USER_MGMT_URL}/login`, {
+      fetcher<any>(`${USER_MGMT_URL}/auth/login`, {
         method: "POST",
         body: JSON.stringify(data),
       }),
     signup: (data: any) =>
-      fetcher<any>(`${USER_MGMT_URL}/signup`, {
+      fetcher<any>(`${USER_MGMT_URL}/auth/signup`, {
         method: "POST",
         body: JSON.stringify(data),
       }),
     bookConsultation: (data: any) =>
-      fetcher<any>(`${USER_MGMT_URL}/book-consultation`, {
+      fetcher<any>(`${USER_MGMT_URL}/auth/book-consultation`, {
         method: "POST",
         body: JSON.stringify(data),
       }),
     logout: () =>
-      fetcher<any>(`${USER_MGMT_URL}/logout`, {
+      fetcher<any>(`${USER_MGMT_URL}/auth/logout`, {
         method: "POST",
       }),
   },
